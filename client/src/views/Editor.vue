@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-blue-400">Editor</div>
+  <div class="">Editor</div>
 </template>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
