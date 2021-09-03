@@ -1,20 +1,11 @@
 <template>
-  <div class="container flex">
-    <SideBar />
-    <Editor />
-  </div>
+  <div class="bg-red-400">Sidebar</div>
 </template>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
 // All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
-import SideBar from "./views/SideBar.vue";
-import Editor from "./views/Editor.vue";
 
 export default {
-  components: {
-    SideBar,
-    Editor,
-  },
   setup() {
     return {
     };
