@@ -2,3 +2,15 @@
 @import '@cds/core/global.min.css'; // clarity global styles
 @import '@cds/core/styles/module.shims.min.css'; // non-evergreen browser shims
 @import '@cds/core/styles/theme.dark.min.css'; // dark theme
+
+:root {
+	 --cds-global-typography-font-family: -apple-system, BlinkMacSystemFont,
+			"Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+			"Fira Sans", "Droid Sans", "Helvetica Neue",
+			sans-serif;
+
+	--cds-global-typography-header-font-family: -apple-system, BlinkMacSystemFont,
+			"Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+			"Fira Sans", "Droid Sans", "Helvetica Neue",
+			sans-serif;
+}

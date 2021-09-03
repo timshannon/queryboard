@@ -1,6 +1,6 @@
 <template>
   <section cds-layout="grid align:stretch gap:md">
-    <div cds-layout="vertical gap:lg col:7">
+    <div cds-layout="vertical gap:lg col:12">
       <cds-input layout="vertical">
         <label>Text Input</label>
         <input type="text" value="hello world" />
@@ -79,41 +79,6 @@
     <div cds-layout="col:1 horizontal align:center">
       <cds-divider orientation="vertical" style="height: 100%"></cds-divider>
     </div>
-    <div cds-layout="col:4">
-      <cds-form-group layout="vertical-inline">
-        <cds-input layout="vertical">
-          <label>Select a Primary Info Color</label>
-          <input type="color" value="#0079ad" />
-        </cds-input>
-
-        <cds-range layout="vertical">
-          <label>Adjust scale</label>
-          <input type="range" value="100" min="90" max="120" />
-          <cds-control-message class="scale-label"
-            >Scale: 100%</cds-control-message
-          >
-        </cds-range>
-
-        <cds-range layout="vertical">
-          <label>Adjust Density</label>
-          <input type="range" value="100" min="70" max="150" />
-          <cds-control-message class="density-label"
-            >Density: 100%</cds-control-message
-          >
-        </cds-range>
-
-        <cds-range layout="vertical">
-          <label>Adjust Border Width</label>
-          <input type="range" value="1" min="1" max="100" />
-        </cds-range>
-
-        <cds-range layout="vertical">
-          <label>Adjust Border Radius</label>
-          <input type="range" value="3" min="0" max="20" />
-        </cds-range>
-      </cds-form-group>
-    </div>
-    <pre id="dynamic-props" cds-layout="col:12"></pre>
   </section>
 </template>
 <script lang="ts">
@@ -129,11 +94,16 @@ import "@cds/core/radio/register.js";
 import "@cds/core/alert/register.js";
 import "@cds/core/divider/register.js";
 
+import { ClarityIcons, userIcon, infoStandardIcon } from "@cds/core/icon";
+
+
 
 export default {
   components: {
   },
   setup() {
+    ClarityIcons.addIcons(userIcon, infoStandardIcon);
+
     return {
     };
   }
