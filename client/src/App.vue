@@ -1,19 +1,37 @@
 <template>
-  <section cds-layout="grid cols@sm:6 cols@md:3 gap:md">
-    <SideBar />
-    <UITest />
-  </section>
+  <div cds-layout="vertical align:stretch">
+    <header cds-layout="p:md p@md:lg"><Toolbar /></header>
+    <div cds-layout="horizontal align:vertical-stretch wrap:none">
+      <nav cds-layout="p:md p@md:lg">
+        <Sidebar />
+      </nav>
+      <cds-divider orientation="vertical"></cds-divider>
+      <div cds-layout="vertical align:stretch">
+        <div>
+          <div cds-layout="vertical gap:md p:lg">
+            <Editor />
+          </div>
+        </div>
+        <cds-divider></cds-divider>
+        <footer cds-layout="p-y:md p-x:lg">footer</footer>
+      </div>
+    </div>
+  </div>
 </template>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
 // All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
-import UITest from "./components/UITest.vue";
-import SideBar from "./views/Sidebar.vue";
+import Sidebar from "./views/Sidebar.vue";
+import Toolbar from "./views/Toolbar.vue";
+import Editor from "./views/Editor.vue";
+
+import "@cds/core/divider/register.js";
 
 export default {
   components: {
-    UITest,
-    SideBar,
+    Toolbar,
+    Sidebar,
+    Editor,
   },
   setup() {
     return {

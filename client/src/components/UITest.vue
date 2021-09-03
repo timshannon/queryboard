@@ -1,5 +1,5 @@
 <template>
-  <section cds-layout="grid align:stretch gap:md">
+  <section cds-layout="grid align:stretch gap:md p:xl">
     <div cds-layout="vertical gap:lg col:12">
       <cds-input layout="vertical">
         <label>Text Input</label>
