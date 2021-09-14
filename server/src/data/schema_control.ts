@@ -1,7 +1,10 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import log from "./log";
+import log from "../log";
 import sysSchema from "./schema";
+import config from "../config";
+
+const dbName = "system";
 
 const sql = {
     insertSchema: `
@@ -17,8 +20,6 @@ const sql = {
 };
 
 export async function ensureSchema(): Promise<void> {
-    await ensureDatabase(schemaCFG);
-
     const cnn = new data.Connection(schemaCFG);
 
     const sysCnn = new data.Connection(config.system);
@@ -39,46 +40,6 @@ export async function ensureSchema(): Promise<void> {
 
     await cnn.close();
     await sysCnn.close();
-}
-
-/* Verifies that the database exists for the connection pool to connect to.
-   It'll create the database if one does not exist.*/
-async function ensureDatabase(cfg: data.IDataCFG): Promise<void> {
-    const client = new pg.Client({
-        user: cfg.user,
-        password: cfg.password,
-        database: "postgres",
-        host: cfg.host,
-        port: cfg.port,
-    });
-
-    client.on("error", (err: Error) => {
-        throw err;
-    });
-
-    client.connect((err: Error) => {
-        if (err) {
-            throw err;
-        }
-    });
-
-    try {
-        const result = await client.query(`SELECT 1 FROM pg_database WHERE datname = '${cfg.database}'`);
-
-        if (result.rowCount === 1) {
-            // database already exists
-            client.end();
-            return;
-        }
-
-        log.info(`Creating database ${cfg.database}`);
-        await client.query(`create database ${cfg.database}`);
-        client.end();
-    } catch (err) {
-        client.end();
-        throw err;
-    }
-    return;
 }
 
 async function ensureSchemaTable(cnn: data.IConnection): Promise<void> {

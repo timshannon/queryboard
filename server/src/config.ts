@@ -6,6 +6,7 @@ env.config();
 
 const config = {
     port: process.env.PORT || "8080", // web server port
+    dataDir: process.env.DATADIR || "./data", // web server port
 };
 
 export default config;

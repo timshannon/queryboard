@@ -2,7 +2,7 @@
 
 import config from "./config";
 import routes from "./routes";
-import { ensureSchema } from "./schema_control";
+import { ensureSchema } from "./data/schema_control";
 
 import * as middleware from "./middleware";
 

@@ -11,6 +11,7 @@ export default (app: express.Express) => {
 };
 
 function v1(app: express.Express) {
+    // route(app).
     // route(app).post("/v1/emails", email.send,
     //     body("to").isString().isRequired().description("Semi-colon delimited list of emails to send to"),
     //     body("subject").isString().isRequired().description("Subject of the email"),
