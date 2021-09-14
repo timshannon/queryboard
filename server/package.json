@@ -4,11 +4,10 @@
   "description": "Server / backend handing for queryboard",
   "scripts": {
     "start": "npm run serve",
-    "build": "npm run build-ts && npm run tslint",
+    "build": "npm run build-ts && npx eslint",
     "serve": "node dist/server.js",
     "test": "jest --forceExit --coverage --verbose=true --detectOpenHandles --runInBand",
     "build-ts": "tsc -p tsconfig.build.json",
-    "tslint": "tslint -c tslint.json -p tsconfig.json",
     "watch-node": "nodemon dist/server.js",
     "watch-ts": "tsc -w",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\""
@@ -43,7 +42,6 @@
     "concurrently": "^5.0.2",
     "eslint": "^7.32.0",
     "nodemon": "^2.0.2",
-    "tslint": "^5.20.1",
     "typescript": "^4.3.2"
   }
 }

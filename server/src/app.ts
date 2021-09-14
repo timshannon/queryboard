@@ -2,6 +2,8 @@
 
 import config from "./config";
 import routes from "./routes";
+import { sysdb } from "./data/data";
+import schema from "./data/schema";
 import { ensureSchema } from "./data/schema_control";
 
 import * as middleware from "./middleware";
@@ -31,7 +33,7 @@ app.use(middleware.errors);
 // set config
 app.set("port", config.port);
 
-ensureSchema().then(async () => {
+ensureSchema(sysdb, schema.system).then(async () => {
     app.emit("ready");
 }).catch((err) => {
     throw err;

@@ -32,11 +32,9 @@ Make sure you describe how tables relate with foreign keys.
 */
 
 export default {
-    system: { // system tables, users, settings, etc
-        scripts: [],
-    },
-    board: { // template for creating / updating query board databases
-        scripts: [],
-    },
+    system: [ // system tables, users, settings, etc
+    ],
+    board: [ // template for creating / updating query board databases
+    ],
 };
 
