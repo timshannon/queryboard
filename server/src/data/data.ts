@@ -1,26 +1,41 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import log from "../log";
 import * as sqlite from "sqlite3";
-
 import crypto from "crypto";
+import path from "path";
+
+import config from "../config";
+
+const SYSTEMDBNAME = "system.db";
+
 
 export class Connection {
-    private cnn: sqlite.Database;
+    private cnn?: sqlite.Database;
 
-    constructor(public readonly filename: string) {
-        this.cnn = new sqlite.Database(filename, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE);
+    constructor(public readonly filename: string) {}
 
-        this.cnn.on("error", (err: Error) => {
-            log.error(err);
+    public open(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.cnn = new sqlite.Database(this.filename, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
+                (err: Error | null) => {
+                    if (err) {
+                        this.cnn = undefined;
+                        reject(err);
+                    }
+                });
+            resolve();
         });
     }
 
-    // query runs an unprepared query, all application queries should use
-    public query<T>(sql: string): Promise<T[]> {
+    // query runs an unprepared query, all application queries should use prepared statements
+    public async query<T>(sql: string, params?: any): Promise<T[]> {
+        if (!this.cnn) {
+            await this.open();
+        }
+
         return new Promise<T[]>((resolve, reject) => {
-            this.cnn.all(sql, (_: sqlite.Statement, err: Error, rows: T[]) => {
-                if (err != null) {
+            this.cnn!.all(sql, params, (_: sqlite.Statement, err: Error, rows: T[]) => {
+                if (err) {
                     reject(err);
                     return;
                 }
@@ -29,21 +44,49 @@ export class Connection {
         });
     }
 
-    public prepare(sql: string): Promise<Statement> {
-        return new Promise<Statement>((resolve, reject) => {
-            this.cnn.prepare(sql, (statement: sqlite.Statement, err: Error) => {
-                if (err != null) {
+    private async prepStatement(sql: string): Promise<sqlite.Statement> {
+        if (!this.cnn) {
+            await this.open();
+        }
+
+        return new Promise<sqlite.Statement>((resolve, reject) => {
+            this.cnn!.prepare(sql, (statement: sqlite.Statement, err: Error) => {
+                if (err) {
                     reject(err);
                     return;
                 }
-                resolve(new Statement(statement));
+                resolve(statement);
             });
+
         });
     }
 
+    public prepare<Params, Results>(sql: string): (params: Params) => Promise<Results[]> {
+        var statement: sqlite.Statement;
+        return async (params: Params): Promise<Results[]> => {
+            if (!statement) {
+                statement = await this.prepStatement(sql);
+            }
+
+            return new Promise<Results[]>((resolve, reject) => {
+                statement.all(params, (err: Error | null, rows: any[]) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(rows as Results[]);
+                });
+            });
+        };
+    }
+
     public async beginTran(wrap: () => Promise<void>): Promise<void> {
+        if (!this.cnn) {
+            await this.open();
+        }
+
         return new Promise<void>(async (resolve, reject) => {
-            return this.cnn.serialize(async () => {
+            return this.cnn!.serialize(async () => {
                 let result;
                 try {
                     try {
@@ -65,90 +108,25 @@ export class Connection {
 
     public close(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.cnn.close(reject);
-            resolve();
-        });
-    }
-
-}
-
-class Statement {
-    constructor(private stmt: sqlite.Statement) {}
-
-    public exec<T>(params: any[]): Promise<T[]> {
-        return new Promise<T[]>((resolve, reject) => {
-            this.stmt.all(params, (err: Error, rows: any[]) => {
+            if (!this.cnn) {
+                resolve(); // already closed
+                return
+            }
+            this.cnn.close((err: Error | null) => {
                 if (err != null) {
                     reject(err);
-                    return;
+                    return
                 }
-                resolve(rows);
+                this.cnn = undefined;
+                resolve();
             });
         });
     }
-
 }
-
-
-
-// export class Transaction {
-//     private active: boolean = false;
-
-//     constructor() {}
-
-//     public query<T>(stmt: sqlite.Statement, ...parameters: any[]): Promise<T[]> {
-//         if (!this.active) {
-//             throw new Error("Cannot run a new query on a closed transaction");
-//         }
-//         return this.client.query(stmt, parameters);
-//     }
-
-//     public async begin(): Promise<void> {
-//         if (this.active) {
-//             throw new Error("Cannot begin a new transaction when one is already open");
-//         }
-
-//         try {
-//             await this.client.query("BEGIN");
-//             this.active = true;
-//         } catch (err) {
-//             this.active = false;
-//             throw err;
-//         }
-
-//         return;
-//     }
-
-//     public async commit(): Promise<void> {
-//         if (!this.active) {
-//             throw new Error("Cannot commit a closed transaction");
-//         }
-
-//         try {
-//             await this.client.query("COMMIT");
-//         } catch (err) {
-//             this.active = false;
-//             throw err;
-//         }
-
-//     }
-
-//     public async rollback(): Promise<void> {
-//         if (!this.active) {
-//             throw new Error("Cannot rollback a closed transaction");
-//         }
-
-//         try {
-//             await this.client.query("ROLLBACK");
-//         } catch (err) {
-//             this.active = false;
-//             throw err;
-//         }
-//     }
-// }
 
 // random returns a URL safe string of random data of bits size
 export function random(bits: number): string {
     return crypto.randomBytes(bits / 8).toString("base64").replace(/\+/g, "").replace(/\//g, "").replace(/\=+$/, "");
 }
 
+export const sysdb = new Connection(path.join(config.dataDir, SYSTEMDBNAME));

@@ -28,20 +28,15 @@ Foreign Keys are important, not only for describing the relationship between tab
 integrity of those relationships.  They come at a small, but worthwhile cost to performance.
 
 Make sure you describe how tables relate with foreign keys.
+
 */
 
 export default {
-    scripts: [
-        `
-        CREATE TABLE schema_versions (
-            PRIMARY KEY(version, name),
-            version INT NOT NULL,
-            script TEXT NOT NULL,
-            locked INT NOT NULL,
-            run_date REAL NOT NULL
-        )
-        `,
-
-    ],
+    system: { // system tables, users, settings, etc
+        scripts: [],
+    },
+    board: { // template for creating / updating query board databases
+        scripts: [],
+    },
 };
 
