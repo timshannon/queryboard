@@ -130,3 +130,6 @@ dist
 
 # build dist folder
 dist/
+
+# data folder
+data/

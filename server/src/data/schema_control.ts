@@ -8,16 +8,16 @@ type Schema = string[];
 const sql = {
     createTable: `
         CREATE TABLE qb_schema_versions (
-            PRIMARY KEY(version, name),
             version INT NOT NULL,
             script TEXT NOT NULL,
             locked INT NOT NULL,
-            run_date REAL NOT NULL
+            run_date REAL NOT NULL,
+            PRIMARY KEY(version)
         )
     `,
     tableExists: `
         SELECT name 
-        FROM sqlite_schema
+        FROM sqlite_master
         WHERE type='table'
         and name = 'qb_schema_versions'
     `,

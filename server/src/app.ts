@@ -33,7 +33,7 @@ app.use(middleware.errors);
 // set config
 app.set("port", config.port);
 
-ensureSchema(sysdb, schema.system).then(async () => {
+ensureSchema(sysdb, schema.system).then(() => {
     app.emit("ready");
 }).catch((err) => {
     throw err;

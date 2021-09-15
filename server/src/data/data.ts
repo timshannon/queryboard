@@ -3,6 +3,7 @@
 import * as sqlite from "sqlite3";
 import crypto from "crypto";
 import path from "path";
+import * as fs from "fs";
 
 import config from "../config";
 
@@ -16,14 +17,21 @@ export class Connection {
 
     public open(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.cnn = new sqlite.Database(this.filename, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
-                (err: Error | null) => {
-                    if (err) {
-                        this.cnn = undefined;
-                        reject(err);
-                    }
-                });
-            resolve();
+            fs.mkdir(path.dirname(this.filename), { recursive: true }, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                this.cnn = new sqlite.Database(this.filename, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
+                    (err: Error | null) => {
+                        if (err) {
+                            this.cnn = undefined;
+                            reject(err);
+                            return;
+                        }
+                        resolve();
+                    });
+            });
         });
     }
 
@@ -34,7 +42,7 @@ export class Connection {
         }
 
         return new Promise<T[]>((resolve, reject) => {
-            this.cnn!.all(sql, params, (_: sqlite.Statement, err: Error, rows: T[]) => {
+            this.cnn!.all(sql, params, (err: Error, rows: T[]) => {
                 if (err) {
                     reject(err);
                     return;
@@ -86,7 +94,7 @@ export class Connection {
         }
 
         return new Promise<void>(async (resolve, reject) => {
-            return this.cnn!.serialize(async () => {
+            this.cnn!.serialize(async () => {
                 let result;
                 try {
                     try {

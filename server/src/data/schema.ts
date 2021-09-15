@@ -34,7 +34,7 @@ Make sure you describe how tables relate with foreign keys.
 export default {
     system: [ // system tables, users, settings, etc
     ],
-    board: [ // template for creating / updating query board databases
+    board: [ // template for creating / updating query board databases, queryboard tables should start with qb_
     ],
 };
 
