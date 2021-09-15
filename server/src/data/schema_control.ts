@@ -29,7 +29,7 @@ const sql = {
         select version, locked from qb_schema_versions order by version desc limit 1
     `,
     lockSchema: `
-        update qb_schema_versions set locked=TRUE where version = $version
+        update qb_schema_versions set locked=1 where version = $version
     `,
 };
 
@@ -76,15 +76,20 @@ async function ensureSchemaVer(schema: Schema, cnn: data.Connection): Promise<vo
     }
 
     if (dbVer < currentVer) {
-        await cnn.query(sql.lockSchema, { version: dbVer });
+        await cnn.query(sql.lockSchema, { $version: dbVer });
         dbVer++;
 
-        log.info(`Updating schema  in ${cnn.filename} to version ${dbVer}`);
+        log.info(`Updating schema  in ${cnn.filepath} to version ${dbVer}`);
         await cnn.query(schema[dbVer]);
-        await cnn.query(sql.insertSchema, { version: dbVer, script: schema[dbVer], locked: false, rund_date: new Date() });
+        await cnn.query(sql.insertSchema, {
+            $version: dbVer,
+            $script: schema[dbVer],
+            $locked: false,
+            $run_date: new Date(),
+        });
         await ensureSchemaVer(schema, cnn);
         return;
     }
 
-    throw new Error(`The schema in ${cnn.filename} version ${dbVer} is newer than the code schema version ${currentVer}`);
+    throw new Error(`The schema in ${cnn.filepath} version ${dbVer} is newer than the code schema version ${currentVer}`);
 }

@@ -9,29 +9,38 @@ import config from "../config";
 
 const SYSTEMDBNAME = "system.db";
 
-
 export class Connection {
     private cnn?: sqlite.Database;
 
-    constructor(public readonly filename: string) {}
+    constructor(public readonly filepath: string) {}
 
-    public open(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            fs.mkdir(path.dirname(this.filename), { recursive: true }, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                this.cnn = new sqlite.Database(this.filename, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
-                    (err: Error | null) => {
-                        if (err) {
-                            this.cnn = undefined;
-                            reject(err);
-                            return;
-                        }
-                        resolve();
-                    });
+    public get inMemory(): boolean {
+        return this.filepath.startsWith(":memory:");
+    }
+
+    public async open(): Promise<void> {
+        if (!this.inMemory) {
+            await new Promise<void>((resolve, reject) => {
+                fs.mkdir(path.dirname(this.filepath), { recursive: true }, (err) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                })
             });
+        }
+
+        return new Promise((resolve, reject) => {
+            this.cnn = new sqlite.Database(this.filepath, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
+                (err: Error | null) => {
+                    if (err) {
+                        this.cnn = undefined;
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
         });
     }
 
@@ -137,4 +146,4 @@ export function random(bits: number): string {
     return crypto.randomBytes(bits / 8).toString("base64").replace(/\+/g, "").replace(/\//g, "").replace(/\=+$/, "");
 }
 
-export const sysdb = new Connection(path.join(config.dataDir, SYSTEMDBNAME));
+export const sysdb = new Connection(config.dataDir.startsWith(":memory:") ? config.dataDir : path.join(config.dataDir, SYSTEMDBNAME));
