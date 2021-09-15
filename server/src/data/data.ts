@@ -39,9 +39,14 @@ export class Connection {
                         reject(err);
                         return;
                     }
+                    this.setConnectionDefaults();
                     resolve();
                 });
         });
+    }
+
+    private async setConnectionDefaults(): Promise<void> {
+        await this.query("PRAGMA foreign_keys = ON");
     }
 
     // query runs an unprepared query, all application queries should use prepared statements

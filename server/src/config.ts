@@ -5,9 +5,17 @@ import env from "dotenv";
 env.config();
 
 const config = {
-    port: process.env.PORT || "8080", // web server port
-    dataDir: process.env.DATADIR || "./data", // directory for storing database files
-    clientDir: process.env.CLIENTDIR || "./client", // directory containing the static files of the html client
+    // web server port
+    port: process.env.PORT || "8080",
+
+    // directory for storing database files
+    dataDir: process.env.DATADIR || "./data",
+
+    // directory containing the static files of the html client
+    clientDir: process.env.CLIENTDIR || "./client",
+
+    // temporary password set for first user, if blank a random password will be generated
+    startupPassword: process.env.STARTUPPASSWORD || "",
 };
 
 export default config;

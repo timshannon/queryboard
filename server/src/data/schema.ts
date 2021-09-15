@@ -13,7 +13,8 @@ individual and specific item.
 ## Common Column Data Types
 
 * Unique IDs - UUID stored as TEXT 
-* Dates - REAL
+
+Use affinity names like BOOLEAN and DATETIME to help descript the underlying type
 
 ## Nulls vs Defaults
 Nulls mean a value was not provided. Most of the time you'll want to use a null, not a default.
@@ -36,15 +37,32 @@ export default {
         `
           CREATE TABLE users (
             username TEXT NOT NULL PRIMARY KEY,
-            admin INT NOT NULL,
-            start_date REAL NOT NULL,
-            end_date REAL,
+            admin BOOLEAN NOT NULL,
+            start_date DATETIME NOT NULL,
+            end_date DATETIME,
             version INT NOT NULL,
-            updated_date REAL NOT NULL,
-            created_date REAL NOT NULL,
+            updated_date DATETIME NOT NULL,
+            created_date DATETIME NOT NULL,
             created_by TEXT NOT NULL,
             updated_by TEXT NOT NULL
         )
+        `,
+        `
+          CREATE TABLE sessions (
+            session_id TEXT NOT NULL PRIMARY KEY,
+            username TEXT NOT NULL references users(username),
+            valid BOOLEAN NOT NULL,
+            csrf_token TEXT NOT NULL,
+            csrf_date DATETIME NOT NULL,
+            ip_address TEXT NOT NULL,
+            user_agent TEXT,
+            expires DATETIME NOT NULL,
+            created_date DATETIME NOT NULL
+        )
+
+        `,
+        `
+            CREATE INDEX i_username_created_date ON sessions (username, created_date)
         `,
     ],
     board: [ // template for creating / updating query board databases, queryboard tables should start with qb_

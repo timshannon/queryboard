@@ -26,9 +26,10 @@ describe("GET /random-url", () => {
             SELECT name 
             FROM sqlite_master
             WHERE type='table'
-            and name = 'qb_schema_versions'
+            and name = 'users'
         `);
         expect(res.length).toBe(1);
     });
+
 });
 

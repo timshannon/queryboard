@@ -29,7 +29,7 @@ const sql = {
         select version, locked from qb_schema_versions order by version desc limit 1
     `,
     lockSchema: `
-        update qb_schema_versions set locked=1 where version = $version
+        update qb_schema_versions set locked=TRUE where version = $version
     `,
 };
 
