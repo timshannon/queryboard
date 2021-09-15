@@ -35,7 +35,7 @@ Make sure you describe how tables relate with foreign keys.
 export default {
     system: [ // system tables, users, settings, etc
         `
-          CREATE TABLE users (
+        CREATE TABLE users (
             username TEXT NOT NULL PRIMARY KEY,
             admin BOOLEAN NOT NULL,
             start_date DATETIME NOT NULL,
@@ -48,7 +48,7 @@ export default {
         )
         `,
         `
-          CREATE TABLE sessions (
+        CREATE TABLE sessions (
             session_id TEXT NOT NULL PRIMARY KEY,
             username TEXT NOT NULL references users(username),
             valid BOOLEAN NOT NULL,
@@ -62,8 +62,35 @@ export default {
 
         `,
         `
-            CREATE INDEX i_username_created_date ON sessions (username, created_date)
+        CREATE INDEX i_username_created_date ON sessions (username, created_date)
         `,
+        `
+        CREATE TABLE passwords (
+            username TEXT NOT NULL PRIMARY KEY references users(username),
+            version INT NOT NULL,
+            hash TEXT NOT NULL,
+            hash_version INT NOT NULL,
+            expiration DATETIME,
+            session_id TEXT references sessions(session_id),
+            updated_date DATETIME NOT NULL,
+            updated_by TEXT NOT NULL,
+            created_date DATETIME NOT NULL,
+            created_by TEXT NOT NULL
+        )
+        `,
+        `
+        CREATE TABLE password_history (
+            username TEXT NOT NULL references users(username),
+            version INT NOT NULL,
+            hash TEXT NOT NULL,
+            hash_version INT NOT NULL,
+            session_id TEXT references sessions(session_id),
+            created_date DATETIME NOT NULL,
+            created_by TEXT NOT NULL,
+            PRIMARY KEY(username, version)
+        )
+        `,
+
     ],
     board: [ // template for creating / updating query board databases, queryboard tables should start with qb_
     ],
