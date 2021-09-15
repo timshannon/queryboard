@@ -4,9 +4,12 @@
 
 import express from "express";
 
+import config from "./config";
+
 // const { route, body } = routes;
 
 export default (app: express.Express) => {
+    app.use(express.static(config.clientDir));
     v1(app);
 };
 

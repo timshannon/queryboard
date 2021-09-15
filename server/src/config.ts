@@ -6,7 +6,8 @@ env.config();
 
 const config = {
     port: process.env.PORT || "8080", // web server port
-    dataDir: process.env.DATADIR || "./data", // web server port
+    dataDir: process.env.DATADIR || "./data", // directory for storing database files
+    clientDir: process.env.CLIENTDIR || "./client", // directory containing the static files of the html client
 };
 
 export default config;
