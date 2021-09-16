@@ -9,6 +9,8 @@ import config from "../config";
 
 const SYSTEMDBNAME = "system.db";
 
+type changeResult = { lastID: number, changes: number };
+
 export class Connection {
     private cnn?: sqlite.Database;
 
@@ -83,7 +85,7 @@ export class Connection {
         });
     }
 
-    public prepare<Params, Results>(sql: string): (params: Params) => Promise<Results[]> {
+    public prepareQuery<Params, Results>(sql: string): (params: Params) => Promise<Results[]> {
         var statement: sqlite.Statement;
         return async (params: Params): Promise<Results[]> => {
             if (!statement) {
@@ -97,6 +99,25 @@ export class Connection {
                         return;
                     }
                     resolve(rows as Results[]);
+                });
+            });
+        };
+    }
+
+    public prepareUpdate<Params>(sql: string): (params: Params) => Promise<changeResult> {
+        var statement: sqlite.Statement;
+        return async (params: Params): Promise<changeResult> => {
+            if (!statement) {
+                statement = await this.prepStatement(sql);
+            }
+
+            return new Promise<changeResult>((resolve, reject) => {
+                statement.run(params, function (err: Error | null) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve({ changes: this.changes, lastID: this.lastID });
                 });
             });
         };

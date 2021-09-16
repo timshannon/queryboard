@@ -1,18 +1,10 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
+import { Session } from "./models/session";
 import * as fail from "./fail";
 import log from "./log";
-import * as uuid from "./uuid";
 
 import * as express from "express";
-
-export interface ISession {
-    id: string;
-    userID: uuid.ID;
-    csrfToken: string;
-    expires: Date;
-    actions(): Promise<string[]>;
-}
 
 
 interface IUpload {
@@ -26,45 +18,38 @@ declare global {
     namespace Express {
         /* tslint:disable:interface-name */
         interface Request {
-            session?: ISession;
+            session?: Session;
             files?: IUpload[];
         }
     }
 }
 
 // TODO: Session handling middleware
-// type sessionFunc = (token: string, signed: boolean) => Promise<ISession | null>;
+export function session() {
+    // usually only the security service will be using it's own getSession func to get the session directly
+    // from the database. Everyone else will use the default get session which will make a call to the security
+    // service's REST API
+    return async (req: express.Request, _: express.Response, next: express.NextFunction) => {
+        try {
+            let token = "";
 
-// export function session(getSessionFunc: sessionFunc = getSession) {
-//     // usually only the security service will be using it's own getSession func to get the session directly
-//     // from the database. Everyone else will use the default get session which will make a call to the security
-//     // service's REST API
-//     return async (req: express.Request, _: express.Response, next: express.NextFunction) => {
-//         try {
-//             let token = "";
-//             let signed = false;
+            const header = req.header("Authorization");
+            if (header) {
+                token = header.slice("Bearer ".length);
+            }
 
-//             const header = req.header("Authorization");
-//             if (header) {
-//                 token = header.slice("Bearer ".length);
-//             } else {
-//                 // get signed auth from query params
-//                 signed = true;
-//                 token = req.query.authorization;
-//             }
-
-//             if (token) {
-//                 const s = await getSessionFunc(token, signed);
-//                 if (s) {
-//                     req.session = s;
-//                 }
-//             }
-//         } catch (err) {
-//             return next(err);
-//         }
-//         return next();
-//     };
-// }
+            if (token) {
+                const s = await Session.get(token);
+                if (s) {
+                    req.session = s;
+                }
+            }
+        } catch (err) {
+            return next(err);
+        }
+        return next();
+    };
+}
 
 export function errors(err: Error, req: express.Request, res: express.Response, _: express.NextFunction) {
     if (err instanceof fail.Failure) {

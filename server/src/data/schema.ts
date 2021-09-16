@@ -90,7 +90,14 @@ export default {
             PRIMARY KEY(username, version)
         )
         `,
-
+        `
+        CREATE TABLE settings (
+            setting_id TEXT NOT NULL PRIMARY KEY,
+            value TEXT NOT NULL,
+            updated_by TEXT NOT NULL,
+            updated_date DATETIME NOT NULL
+        )
+        `,
     ],
     board: [ // template for creating / updating query board databases, queryboard tables should start with qb_
     ],
