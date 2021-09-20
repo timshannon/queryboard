@@ -1,39 +1,33 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import config from "../config";
 import sql from "./password_sql";
 import { Session } from "./session";
 import { User } from "./user";
-import userSQL from "./user_sql";
+import { sysdb } from "../data/data";
 
 import * as pwdSvc from "../services/password";
-import settings from "../services/settings";
+import settings from "./settings";
 
-import { addDays, addMinutes, isBefore } from "date-fns";
-import { data, email as emailTemplate, fail, security, uuid, validation } from "lib-svc-common";
-import url from "url";
-
-const forgotPasswordExpirationMinutes = 15;
+import { addDays, isBefore } from "date-fns";
+import * as fail from "../fail";
 
 interface IPasswordFields {
-    userID: uuid.ID;
+    username: string;
     version: number;
     hash: string;
     hashVersion: number;
     expiration?: Date;
     sessionID?: string;
-    createdBy?: uuid.ID;
+    createdBy?: string;
     createdDate?: Date;
-    updatedBy?: uuid.ID;
+    updatedBy?: string;
     updatedDate?: Date;
 }
 
 export class Password {
-    public static async create(userID: uuid.ID, password: string, createdBy: uuid.ID,
+    public static async create(username: string, password: string, createdBy: User,
         sessionID?: string): Promise<Password> {
-        if (!await settings.auth.password.get()) {
-            throw new fail.Failure("Creating new users with password authentication is currently not allowed");
-        }
+
         const expireDays = await settings.password.expirationDays.get();
         let expiration: undefined | Date;
         if (expireDays !== 0) {
@@ -44,27 +38,27 @@ export class Password {
         const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(password);
 
         return new Password({
-            userID,
+            username,
             version: 0,
             hash,
             hashVersion: pwdSvc.currentVersion,
             expiration,
             sessionID,
-            createdBy,
+            createdBy: createdBy.username,
             createdDate: new Date(),
         });
     }
 
-    public static async get(userID: uuid.ID, cnn: data.IConnection = pool): Promise<Password> {
-        const res = await cnn.query(sql.get, userID);
-        if (res.rowCount === 0) {
-            throw new fail.NotFound(`No password found for user ${userID}`);
+    public static async get(username: string): Promise<Password> {
+        const res = await sql.get({ $username: username });
+        if (res.length === 0) {
+            throw new fail.NotFound(`No password found for user ${username}`);
         }
 
-        const row = res.rows[0];
+        const row = res[0];
 
         return new Password({
-            userID: row.user_id,
+            username: row.username,
             version: row.version,
             hash: row.hash,
             hashVersion: row.hash_version,
@@ -75,23 +69,23 @@ export class Password {
         });
     }
 
-    public static async login(email: string, password: string, rememberMe: boolean, ipAddress: string,
+    public static async login(username: string, password: string, rememberMe: boolean, ipAddress: string,
         userAgent?: string): Promise<Session> {
         const errLogin = new fail.Failure("Invalid user or password");
 
         // TODO: Ratelimit password attempts
-        return await pool.beginTran(async (tx: data.Transaction): Promise<any> => {
-            const res = await tx.query(sql.login, email.toLowerCase());
+        return await sysdb.beginTran<Session>(async (): Promise<Session> => {
+            const res = await sql.login({ $username: username });
 
-            if (res.rowCount === 0) {
+            if (res.length === 0) {
                 throw errLogin;
             }
 
-            const row = res.rows[0];
+            const row = res[0];
 
             const user = User.fromRow(row);
             const pwd = new Password({
-                userID: user.id,
+                username: user.username,
                 version: row.version,
                 hash: row.hash,
                 hashVersion: row.hash_version,
@@ -103,92 +97,29 @@ export class Password {
             }
 
             if (pwd.expired()) {
-                throw new fail.Failure("Your password has expired");
+                throw new fail.Failure("Your password has expired, you must pick a new password");
             }
 
             if (!await pwd.compare(password)) {
                 throw errLogin;
             }
 
-            return await Session.create(user, auth.password, rememberMe, ipAddress, userAgent, tx);
+            return await Session.create(user, rememberMe, ipAddress, userAgent);
         });
     }
 
-    public static async forgotRequest(email: string): Promise<void> {
-        validation.isEmail(email);
-        const res = await pool.query(userSQL.user.getByEmail, email);
-        if (res.rowCount === 0) {
-            // return silently without acknowledging if the email address exists or not
-            return;
-        }
-
-        const userID = res.rows[0].user_id;
-
-        await pool.beginTran(async (tx: data.Transaction) => {
-            const token = data.random(256);
-            const expires = addMinutes(new Date(), forgotPasswordExpirationMinutes);
-            await tx.query(sql.forgot.insert, token, userID, expires, new Date());
-            await svcEmail.send(email, "Password change request", emailTemplate.baseTemplate.template(`
-                <h1 align="center">Password change request</h1>
-                <br>
-                <p>A request was made to reset your password.  Please click below to set a new password.
-                The link is only valid for the next ${forgotPasswordExpirationMinutes} minutes.</p>
-                <p>If you did NOT request this change, you can safely ignore this email.</p>
-                <br>
-                ${emailTemplate.baseTemplate.button("Click Here To Set Your Password",
-                url.resolve(config.common.baseURL, "forgot-password/" + token))}`));
-        });
-
-    }
-
-    public static async forgotRetrieveRequest(token: string, cnn: data.IConnection = pool): Promise<User> {
-        let res = await cnn.query(sql.forgot.get, token, new Date());
-        if (res.rowCount === 0) {
-            throw new fail.NotFound();
-        }
-
-        const req = res.rows[0];
-        res = await cnn.query(userSQL.user.get, req.user_id);
-
-        if (res.rowCount === 0) {
-            throw new fail.NotFound();
-        }
-
-        const user = User.fromRow(res.rows[0]);
-        if (!user.active()) {
-            throw new fail.NotFound();
-        }
-        return user;
-    }
-
-    public static async forgotClaimRequest(token: string, newPassword: string, ipAddress: string,
-        userAgent?: string): Promise<Session> {
-        return await pool.beginTran(async (tx: data.Transaction): Promise<Session> => {
-            const user = await Password.forgotRetrieveRequest(token, tx);
-
-            await tx.query(sql.forgot.claim, new Date(), token);
-
-            const pass = await Password.get(user.id, tx);
-
-            const s = await Session.create(user, auth.password, false, ipAddress, userAgent, tx);
-            await pass.update(newPassword, user.id, s, tx);
-
-            return s;
-        });
-    }
-
-    public readonly userID: uuid.ID;
+    public readonly username: string;
     public readonly version: number;
     public readonly hash: string;
     public readonly hashVersion: number;
     public readonly expiration?: Date;
     public readonly sessionID?: string;
-    public readonly createdBy?: uuid.ID;
+    public readonly createdBy?: string;
     public readonly createdDate?: Date;
-    public readonly updatedBy?: uuid.ID;
+    public readonly updatedBy?: string;
     public readonly updatedDate?: Date;
     constructor(args: IPasswordFields) {
-        this.userID = args.userID;
+        this.username = args.username;
         this.version = args.version;
         this.hash = args.hash;
         this.hashVersion = args.hashVersion;
@@ -200,9 +131,23 @@ export class Password {
         this.updatedDate = args.updatedDate || args.createdDate;
     }
 
-    public async insert(cnn: data.IConnection = pool): Promise<void> {
-        await cnn.query(sql.insert, this.userID, this.version, this.hash, this.hashVersion, this.expiration,
-            this.sessionID, this.updatedDate, this.updatedBy, this.createdDate, this.createdBy);
+    public async insert(): Promise<void> {
+        if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {
+            throw new Error("Cannot insert password due to missing fields");
+        }
+
+        await sql.insert({
+            $username: this.username,
+            $version: this.version,
+            $hash: this.hash,
+            $hash_version: this.hashVersion,
+            $expiration: this.expiration,
+            $session_id: this.sessionID,
+            $updated_date: this.updatedDate,
+            $updated_by: this.updatedBy,
+            $created_date: this.createdDate,
+            $created_by: this.createdBy,
+        });
     }
 
     public expired(): boolean {
@@ -216,7 +161,7 @@ export class Password {
         const pwdVer = pwdSvc.versions[this.hashVersion];
 
         if (!pwdVer) {
-            throw new Error(`User with id ${this.userID} has an invalid password hash version of ` +
+            throw new Error(`User ${this.username} has an invalid password hash version of ` +
                 this.hashVersion);
         }
 
@@ -228,12 +173,7 @@ export class Password {
         * Admin is changing an other user's password
         * Password resets from emailed token
      */
-    public async update(password: string, who: uuid.ID, session: security.ISession,
-        tx: data.Transaction): Promise<void> {
-        if (!await settings.auth.password.get()) {
-            throw new fail.Failure("Password authentication is currently not allowed");
-        }
-
+    public async update(password: string, session: Session): Promise<void> {
         await pwdSvc.validate(password);
 
         if (await this.compare(password)) {
@@ -243,14 +183,15 @@ export class Password {
         const reuse = await settings.password.reuseCheck.get();
         if (reuse > 0) {
             // test each previous password using that passwords hash version
-            const res = await tx.query(sql.history.get, this.userID, reuse);
-            for (const row of res.rows) {
+            const res = await sql.history.get({ $username: this.username, $limit: reuse });
+            for (const row of res) {
                 const passHistory = new Password({
-                    userID: row.user_id,
+                    username: row.username,
                     version: row.version,
                     hash: row.hash,
                     hashVersion: row.hash_version,
                 });
+
                 if (await passHistory.compare(password)) {
                     throw new fail.Failure(`Your new password cannot match your previous ${reuse + 1} passwords`);
                 }
@@ -264,11 +205,32 @@ export class Password {
             expires = addDays(new Date(), expireDays);
         }
 
-        await tx.query(sql.history.insert, this.userID, this.version, this.hash, this.hashVersion,
-            this.sessionID, this.updatedDate, this.updatedBy);
-        await tx.query(sql.update, this.userID, this.version, hash, pwdSvc.currentVersion, expires,
-            session.id, new Date(), who);
-        await Session.logoutAll(this.userID, tx, session.id);
+        if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {
+            throw new Error("Cannot insert password history due to missing fields");
+        }
+
+        await sql.history.insert({
+            $username: this.username,
+            $version: this.version,
+            $hash: this.hash,
+            $hash_version: this.hashVersion,
+            $session_id: this.sessionID,
+            $created_date: this.updatedDate,
+            $created_by: this.updatedBy,
+        });
+
+        await sql.update({
+            $username: this.username,
+            $version: this.version,
+            $hash: hash,
+            $hash_version: pwdSvc.currentVersion,
+            $expiration: expires,
+            $session_id: session.id,
+            $updated_date: new Date(),
+            $updated_by: session.username,
+        });
+
+        await Session.logoutAll(this.username, session.id);
     }
 }
 

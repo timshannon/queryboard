@@ -87,6 +87,9 @@ export class Session {
     public readonly ipAddress: string;
     public readonly expires: Date;
     public readonly userAgent?: string;
+
+    private _user?: User;
+
     constructor(args: ISessionFields) {
         this.id = args.id;
         this.username = args.username;
@@ -111,6 +114,19 @@ export class Session {
             $expires: this.expires,
             $created_date: new Date(),
         });
+    }
+
+    public async user(): Promise<User> {
+        if (this._user) {
+            return this._user;
+        }
+
+        this._user = await User.get(this, this.username);
+        return this._user;
+    }
+
+    public async IsAdmin(): Promise<boolean> {
+        return (await this.user()).admin;
     }
 
     // logs out of the a session

@@ -123,12 +123,12 @@ export class Connection {
         };
     }
 
-    public async beginTran(wrap: () => Promise<void>): Promise<void> {
+    public async beginTran<T>(wrap: () => Promise<T>): Promise<T> {
         if (!this.cnn) {
             await this.open();
         }
 
-        return new Promise<void>(async (resolve, reject) => {
+        return new Promise<T>(async (resolve, reject) => {
             this.cnn!.serialize(async () => {
                 let result;
                 try {

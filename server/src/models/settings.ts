@@ -12,18 +12,18 @@ interface ISetting<T> {
 // TODO: Cache these values
 
 const sql = {
-    insert: sysdb.prepare<{
+    insert: sysdb.prepareUpdate<{
         $setting_id: string, $value: string, $updated_by: string, $updated_date: Date,
-    }, void>(`
+    }>(`
         insert into settings (setting_id, value, updated_by, updated_date)
         values ($setting_id, $value, $updated_by, $updated_date)
     `),
-    delete: sysdb.prepare<{
+    delete: sysdb.prepareUpdate<{
         $setting_id: string,
-    }, void>(`
+    }>(`
         delete from settings where setting_id = $setting_id
     `),
-    get: sysdb.prepare<{
+    get: sysdb.prepareQuery<{
         $setting_id: string,
     }, {
         value: string,
@@ -91,13 +91,13 @@ async function getNumber(id: string, defaultValue: number): Promise<number> {
     return parseInt(strVal!, 10) || defaultValue;
 }
 
-async function getString(id: string, defaultValue: string): Promise<string> {
-    const strVal = await getValue(id);
-    if (strVal == null) {
-        return defaultValue;
-    }
-    return strVal;
-}
+// async function getString(id: string, defaultValue: string): Promise<string> {
+//     const strVal = await getValue(id);
+//     if (strVal == null) {
+//         return defaultValue;
+//     }
+//     return strVal;
+// }
 
 function booleanSetting(id: string, defaultValue: boolean): ISetting<boolean> {
     return {
@@ -133,29 +133,29 @@ function numberSetting(id: string, defaultValue: number, min?: number, max?: num
     };
 }
 
-function stringSetting(id: string, defaultValue: string, oneOf?: string[]): ISetting<string> {
-    return {
-        get: async (): Promise<string> => {
-            return getString(id, defaultValue);
-        },
-        set: async (user: User, value = defaultValue): Promise<void> => {
-            if (typeof value !== "string") {
-                throw new fail.Failure(`Invalid setting type: ${value} is not a string`);
-            }
-            if (oneOf) {
-                let found = false;
-                for (const item of oneOf) {
-                    if (value === item) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    throw new fail.Failure(`${id} must be one of ${oneOf}`);
-                }
-            }
-            return await setValue(user, id, value);
-        },
-    };
-}
+// function stringSetting(id: string, defaultValue: string, oneOf?: string[]): ISetting<string> {
+//     return {
+//         get: async (): Promise<string> => {
+//             return getString(id, defaultValue);
+//         },
+//         set: async (user: User, value = defaultValue): Promise<void> => {
+//             if (typeof value !== "string") {
+//                 throw new fail.Failure(`Invalid setting type: ${value} is not a string`);
+//             }
+//             if (oneOf) {
+//                 let found = false;
+//                 for (const item of oneOf) {
+//                     if (value === item) {
+//                         found = true;
+//                         break;
+//                     }
+//                 }
+//                 if (!found) {
+//                     throw new fail.Failure(`${id} must be one of ${oneOf}`);
+//                 }
+//             }
+//             return await setValue(user, id, value);
+//         },
+//     };
+// }
 

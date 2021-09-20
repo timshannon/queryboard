@@ -8,7 +8,7 @@ export default {
             $username: string,
             $admin: boolean,
             $start_date: Date,
-            $end_date: Date,
+            $end_date?: Date,
             $version: number,
             $updated_date: Date,
             $created_date: Date,
@@ -67,7 +67,7 @@ export default {
             $version: number,
             $admin: boolean,
             $start_date: Date,
-            $end_date: Date,
+            $end_date?: Date,
             $updated_date: Date,
             $updated_by: string,
         }>(`

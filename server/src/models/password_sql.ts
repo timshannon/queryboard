@@ -7,6 +7,7 @@ export default {
         $username: string,
     }, {
         username: string,
+        admin: boolean,
         start_date: Date,
         end_date: Date,
         hash: string,
@@ -15,6 +16,7 @@ export default {
         expiration: Date,
     }>(`
         select  u.username, 
+                u.admin,
                 u.start_date, 
                 u.end_date, 
                 p.hash, 
@@ -31,6 +33,7 @@ export default {
     }, {
         username: string,
         hash: string,
+        version: number,
         hash_version: number,
         expiration: Date,
         session_id: string,
@@ -53,7 +56,7 @@ export default {
         $version: number,
         $hash: string,
         $hash_version: number,
-        $expiration: Date,
+        $expiration?: Date,
         $session_id: string,
         $updated_date: Date,
         $updated_by: string,
@@ -89,6 +92,7 @@ export default {
         $version: number,
         $hash: string,
         $hash_version: number,
+        $expiration?: Date,
         $session_id: string,
         $updated_date: Date,
         $updated_by: string,
