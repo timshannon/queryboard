@@ -1,10 +1,13 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import { sysdb } from "../data/data";
+import { sysdb, random } from "../data/data";
+import log from "../log";
 import { Session } from "./session";
 import { Password } from "./password";
+import * as pwdSvc from "../services/password";
 import sql from "./user_sql";
 import * as fail from "../fail";
+import config from "../config";
 
 import { isAfter, isBefore } from "date-fns";
 
@@ -29,8 +32,8 @@ interface IUpdates {
 }
 
 export class User {
-    public static async create(session: Session, username: string, tempPassword: string): Promise<User> {
-        var who = await session.user();
+    public static async create(session: Session, username: string, tempPassword: string, admin: boolean): Promise<User> {
+        const who = await session.user();
         if (!who.admin) {
             throw new fail.Unauthorized("Only admins can create new users");
         }
@@ -39,6 +42,7 @@ export class User {
             username,
             version: 0,
             startDate: new Date(),
+            admin,
         });
 
         const pwd = await Password.create(username, tempPassword, who);
@@ -49,6 +53,7 @@ export class User {
         });
         return newUser;
     }
+
 
     public static async get(session: Session, username: string): Promise<User> {
         if (session.username !== username && !(await session.IsAdmin())) {
@@ -62,6 +67,44 @@ export class User {
         }
 
         return User.fromRow(res[0]);
+    }
+
+    // ensureAdmin ensures that at least one active admin exists.  If one doesn't it will create one
+    // with a random password
+    public static async ensureAdmin(): Promise<void> {
+        if ((await sql.user.count())[0].count > 0) {
+            return;
+        }
+
+        const username = "admin";
+        const tempPassword = config.startupPassword || random(256);
+
+        const newUser = new User({
+            username,
+            version: 0,
+            startDate: new Date(),
+            admin: true,
+        });
+
+        const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(tempPassword);
+
+        const pwd = new Password({
+            username,
+            version: 0,
+            hash,
+            hashVersion: pwdSvc.currentVersion,
+            expiration: new Date(),
+            sessionID: "",
+            createdBy: "",
+            createdDate: new Date(),
+        });
+
+        await sysdb.beginTran(async () => {
+            await newUser.insert("");
+            await pwd.insert();
+        });
+
+        log.info(`No users found, "admin" user created with password "${tempPassword}"`);
     }
 
 
@@ -134,7 +177,7 @@ export class User {
             this.endDate = updates.endDate;
         }
 
-        await this.validate();
+        this.validate();
 
         const res = await sql.user.update({
             $username: this.username,
@@ -161,7 +204,7 @@ export class User {
                 throw new fail.Failure("You must provide your old password to set a new password");
             }
 
-            if (!await currentPass.compare(oldPassword!)) {
+            if (!await currentPass.compare(oldPassword)) {
                 throw new fail.Failure("Your old password is incorrect");
             }
         } else {
@@ -175,7 +218,7 @@ export class User {
     }
 
     public async insert(createdBy: string): Promise<void> {
-        await this.validate();
+        this.validate();
         const res = await sql.user.get({ $username: this.username });
         if (res.length !== 0) {
             throw new fail.Failure(`A User with the username ${this.username} already exists`);
@@ -191,11 +234,11 @@ export class User {
             $updated_date: new Date(),
             $created_by: createdBy,
             $updated_by: createdBy,
-        })
+        });
     }
 
 
-    private async validate(): Promise<void> {
+    private validate(): void {
         if (this.username.length > maxNameLength) {
             throw new fail.Failure(`username is longer than ${maxNameLength} characters`);
         }

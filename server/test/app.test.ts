@@ -4,6 +4,8 @@ process.env.DATADIR = ":memory:";
 import app from "../src/app";
 import { sysdb } from "../src/data/data";
 
+import userSQL from "../src/models/user_sql";
+
 import request from "supertest";
 
 beforeAll(async () => {
@@ -16,9 +18,9 @@ beforeAll(async () => {
 });
 
 describe("GET /random-url", () => {
-    it("should return 404", (done) => {
-        request(app).get("/blah")
-            .expect(404, done);
+    it("should return 404", () => {
+        return request(app).get("/blah")
+            .expect(404);
     });
 
     it("should ensure schema", async () => {
@@ -30,6 +32,18 @@ describe("GET /random-url", () => {
         `);
         expect(res.length).toBe(1);
     });
+
+    it("should ensure create an admin if no users exist", async () => {
+        const res = await userSQL.user.count();
+        const usr = await userSQL.user.get({ $username: "admin" });
+
+        expect(res.length).toBe(1);
+        expect(res[0].count).toBe(1);
+        expect(usr.length).toBe(1);
+        expect(usr[0].admin).toBe(true);
+        expect(usr[0].username).toBe("admin");
+    });
+
 
 });
 

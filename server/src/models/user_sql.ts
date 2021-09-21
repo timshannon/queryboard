@@ -81,6 +81,10 @@ export default {
             where   username = $username
             and     version = $version
         `),
+        count: sysdb.prepareQuery<void, { count: number }>(`
+            select  count(*)
+            from    users
+        `),
     },
 };
 

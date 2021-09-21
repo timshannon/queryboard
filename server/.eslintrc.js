@@ -1,27 +1,29 @@
 module.exports = {
-    "env": {
+	root: true,
+	"env": {
         "es2021": true
     },
+	"parser": '@typescript-eslint/parser',
+		"parserOptions": {
+		"ecmaVersion": 12,
+		"sourceType": 'module',
+		tsconfigRootDir: __dirname,
+		project: ['./tsconfig.json'],
+	},
+	"plugins": [
+        "@typescript-eslint"
+    ],
     "extends": [
         "eslint:recommended",
-        "plugin:vue/essential",
-        "plugin:@typescript-eslint/recommended"
-    ],
-	"parser": "vue-eslint-parser",
-    "parserOptions": {
-        "ecmaVersion": 12,
-        "parser": "@typescript-eslint/parser",
-        "sourceType": "module"
-    },
-    "plugins": [
-        "vue",
-        "@typescript-eslint"
+        "plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
     "rules": {
 		"quotes": ["error", "double"],
-		"max-lines": ["error", 150],
 		"semi": ["error"],
 		"@typescript-eslint/explicit-module-boundary-types": "off",
+		"no-var": "error",
+		"prefer-const": "error",
     },
 	"overrides": [
     {

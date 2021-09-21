@@ -16,7 +16,6 @@ interface IUpload {
 
 declare global {
     namespace Express {
-        /* tslint:disable:interface-name */
         interface Request {
             session?: Session;
             files?: IUpload[];

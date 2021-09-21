@@ -1,6 +1,8 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 import "source-map-support/register"; // gives us stack line numbers in ts code
 
+import config from "./config";
+
 enum level {
     ERROR = "ERROR",
     WARNING = "WARNING",
@@ -29,9 +31,50 @@ export default {
     },
 };
 
+function shouldLog(logLevel: level): boolean {
+    if (config.logLevel === level.NONE) {
+        return false;
+    }
+
+    if (config.logLevel === level.DEBUG) {
+        return true;
+    }
+
+    if (config.logLevel === level.INFO) {
+        if (logLevel !== level.DEBUG) {
+            return true;
+        }
+        return false;
+    }
+
+    if (config.logLevel === level.WARNING) {
+        if (logLevel === level.WARNING || logLevel === level.ERROR) {
+            return true;
+        }
+        return false;
+    }
+
+    if (config.logLevel === level.ERROR) {
+        if (logLevel === level.ERROR) {
+            return true;
+        }
+        return false;
+    }
+
+    // unknown log level config, default to logging warnings and errors
+    if (logLevel === level.WARNING || logLevel === level.ERROR) {
+        return true;
+    }
+    return false;
+
+}
 
 
 function log(logLevel: level, message: string, stack?: string) {
+    if (!shouldLog(logLevel)) {
+        return;
+    }
+
     let logFunc;
 
     if (logLevel === level.ERROR) {

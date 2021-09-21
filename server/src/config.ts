@@ -16,6 +16,9 @@ const config = {
 
     // temporary password set for first user, if blank a random password will be generated
     startupPassword: process.env.STARTUPPASSWORD || "",
+
+    // log level is what level of messages to show in the log
+    logLevel: process.env.LOG_LEVEL || ((process.env.NODE_ENV === "production") ? "WARNING" : "DEBUG"),
 };
 
 export default config;

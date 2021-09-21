@@ -5,7 +5,8 @@ module.exports = {
     "extends": [
         "eslint:recommended",
         "plugin:vue/essential",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
 	"parser": "vue-eslint-parser",
     "parserOptions": {
