@@ -17,16 +17,16 @@ const COLOR_CYAN = "\x1b[36m";
 const COLOR_RESET = "\x1b[0m";
 
 export default {
-    error: (err: Error) => {
+    error: (err: Error): void => {
         log(level.ERROR, err.message, err.stack);
     },
-    warning: (err: Error) => {
+    warning: (err: Error): void => {
         log(level.WARNING, err.message, err.stack);
     },
-    info: (entry: string) => {
+    info: (entry: string): void => {
         log(level.INFO, entry);
     },
-    debug: (entry: string) => {
+    debug: (entry: string): void => {
         log(level.DEBUG, entry);
     },
 };

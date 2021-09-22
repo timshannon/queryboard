@@ -61,9 +61,14 @@ async function ensureSchemaVer(schema: Schema, cnn: data.Connection): Promise<vo
     if (res.length > 0) {
         if (res[0].locked) {
             log.info("schema table locked. Waiting...");
-            setTimeout(async () => {
-                await ensureSchemaVer(schema, cnn);
-            }, 1000);
+            await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    ensureSchemaVer(schema, cnn)
+                        .then(resolve)
+                        .catch(reject);
+
+                }, 1000);
+            });
             return;
         }
 

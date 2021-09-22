@@ -33,6 +33,7 @@ export default versions[currentVersion];
 export { versions };
 
 const BAD_PASSWORD_INDEX = fs.readFileSync("./src/services/bad_passwords.txt", "utf8");
+/* eslint-disable quotes, no-useless-escape */
 const SPECIAL_CHARACTERS = ` !"#$%&'()*+,-./:;<=>?@[\]^_` + "`{|}~";
 
 export async function validate(password: string): Promise<void> {

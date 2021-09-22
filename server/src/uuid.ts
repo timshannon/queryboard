@@ -17,7 +17,7 @@ export function generate(): ID {
 // and the valid check's main purpose is to prevent bad user input from generating 500 errors
 export const nilID = "00000000-0000-0000-0000-000000000000" as ID;
 
-export function validate(id: string, allowNil = true) {
+export function validate(id: string, allowNil = true): void {
     if (!isValid(id, allowNil)) {
         throw new fail.Failure(`The value ${id} is not a valid ID`);
     }

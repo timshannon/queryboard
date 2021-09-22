@@ -87,7 +87,7 @@ export default {
     updateCSRF: sysdb.prepareUpdate<{
         $csrf_token: string,
         $session_id: string,
-    }>(`update sessions set csrf_token = $csrf_token where session_id = $session_id`),
+    }>("update sessions set csrf_token = $csrf_token where session_id = $session_id"),
     invalidateAll: sysdb.prepareUpdate<{
         $username: string,
         $session_id: string,

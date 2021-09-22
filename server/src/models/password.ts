@@ -161,8 +161,7 @@ export class Password {
         const pwdVer = pwdSvc.versions[this.hashVersion];
 
         if (!pwdVer) {
-            throw new Error(`User ${this.username} has an invalid password hash version of ` +
-                this.hashVersion);
+            throw new Error(`User ${this.username} has an invalid password hash version of ${this.hashVersion}`);
         }
 
         return pwdVer.compare(otherPassword, this.hash);

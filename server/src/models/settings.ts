@@ -4,7 +4,7 @@ import * as fail from "../fail";
 import { User } from "./user";
 import { sysdb } from "../data/data";
 
-interface ISetting<T> {
+export interface ISetting<T> {
     get(): Promise<T>;
     set(user: User, value?: T): Promise<void>;
 }
@@ -27,7 +27,7 @@ const sql = {
         $setting_id: string,
     }, {
         value: string,
-    }>(`select value from settings where setting_id = $setting_id`),
+    }>("select value from settings where setting_id = $setting_id"),
 };
 
 export default {
@@ -49,7 +49,7 @@ export default {
     },
 };
 
-async function setValue(user: User, id: string, value: any): Promise<void> {
+async function setValue(user: User, id: string, value: { toString(): string }): Promise<void> {
     if (!user.admin) {
         throw new fail.Unauthorized("Only admins can update settings");
     }
@@ -88,7 +88,7 @@ async function getNumber(id: string, defaultValue: number): Promise<number> {
     if (strVal == null) {
         return defaultValue;
     }
-    return parseInt(strVal!, 10) || defaultValue;
+    return parseInt(strVal, 10) || defaultValue;
 }
 
 // async function getString(id: string, defaultValue: string): Promise<string> {
@@ -105,10 +105,7 @@ function booleanSetting(id: string, defaultValue: boolean): ISetting<boolean> {
             return getBoolean(id, defaultValue);
         },
         set: async (user: User, value = defaultValue): Promise<void> => {
-            if (typeof value !== "boolean") {
-                throw new fail.Failure(`Invalid setting type: ${value} is not a boolean`);
-            }
-            return await setValue(user, id, value.toString());
+            return await setValue(user, id, value);
         },
     };
 }
@@ -119,9 +116,6 @@ function numberSetting(id: string, defaultValue: number, min?: number, max?: num
             return getNumber(id, defaultValue);
         },
         set: async (user: User, value = defaultValue): Promise<void> => {
-            if (typeof value !== "number") {
-                throw new fail.Failure(`Invalid setting type: ${value} is not a number`);
-            }
             if (min !== undefined && value < min) {
                 throw new fail.Failure(`${id} must be greater than ${min}`);
             }

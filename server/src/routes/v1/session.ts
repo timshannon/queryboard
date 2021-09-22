@@ -13,16 +13,16 @@ export async function passwordLogin(req: express.Request, res: express.Response)
     res.status(201).send(session);
 }
 
-export async function get(req: express.Request, res: express.Response) {
+export async function get(req: express.Request, res: express.Response): Promise<void> {
     if (!req.session) {
         throw new fail.NotFound("No valid session found");
     }
 
     res.send(req.session);
+    await Promise.resolve();
 }
 
-
-export async function logout(req: express.Request, res: express.Response) {
+export async function logout(req: express.Request, res: express.Response): Promise<void> {
     if (!req.session) {
         throw new fail.Unauthorized();
     }

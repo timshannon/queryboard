@@ -25,53 +25,52 @@ interface IField {
     validate(req: express.Request): Promise<void>;
 }
 
+interface PromiseHandler {
+    (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void>;
+}
+
 class Route {
     public fields: IField[] = [];
 
     constructor(public readonly app: express.Express, public readonly requireSession = true) {}
 
-    public get(path: string, handler: express.Handler, ...fields: IField[]) {
+    public get(path: string, handler: PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
-        this.app.get(path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            try {
-                await this.validate(req);
-                handler(req, res, next);
-            } catch (err) {
-                next(err);
-            }
+        this.app.get(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            this.validate(req)
+                .then(async () => {
+                    await handler(req, res, next);
+                }).catch(next);
         });
     }
-    public put(path: string, handler: express.Handler, ...fields: IField[]) {
+
+    public put(path: string, handler: PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
-        this.app.put(path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            try {
-                await this.validate(req);
-                handler(req, res, next);
-            } catch (err) {
-                next(err);
-            }
+        this.app.put(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            this.validate(req)
+                .then(async () => {
+                    await handler(req, res, next);
+                }).catch(next);
         });
     }
-    public post(path: string, handler: express.Handler, ...fields: IField[]) {
+
+    public post(path: string, handler: PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
-        this.app.post(path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            try {
-                await this.validate(req);
-                handler(req, res, next);
-            } catch (err) {
-                next(err);
-            }
+        this.app.post(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            this.validate(req)
+                .then(async () => {
+                    await handler(req, res, next);
+                }).catch(next);
         });
     }
-    public delete(path: string, handler: express.Handler, ...fields: IField[]) {
+
+    public delete(path: string, handler: PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
-        this.app.delete(path, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            try {
-                await this.validate(req);
-                handler(req, res, next);
-            } catch (err) {
-                next(err);
-            }
+        this.app.delete(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            this.validate(req)
+                .then(async () => {
+                    await handler(req, res, next);
+                }).catch(next);
         });
     }
 
@@ -94,7 +93,7 @@ enum fieldType {
     body = "BODY",
 }
 
-type validationFunc = (value: any, field: string) => any;
+type validationFunc = (value: unknown, field: string) => unknown;
 
 class Field {
     public fieldDescription?: string;
@@ -112,7 +111,8 @@ class Field {
         return this;
     }
 
-    public async validate(req: express.Request): Promise<void> {
+    public validate(req: express.Request): Promise<void> {
+        /* eslint @typescript-eslint/no-explicit-any: "off" */
         let value: any;
         if (this.type === fieldType.param) {
             value = req.params;
@@ -128,6 +128,8 @@ class Field {
                 value[this.name] = update;
             }
         }
+
+        return Promise.resolve();
     }
 
     public isFloat(): Field {
@@ -202,6 +204,8 @@ class Field {
                         return;
                     }
                 }
+
+                /* eslint @typescript-eslint/restrict-template-expressions: "off" */
                 throw new fail.Failure(`The field '${fieldName} is not one of ${values}`);
             }
         });

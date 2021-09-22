@@ -1,6 +1,8 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 process.env.DATADIR = ":memory:";
+process.env.STARTUPPASSWORD = "AdminPassword";
+
 import app from "../src/app";
 import { sysdb } from "../src/data/data";
 

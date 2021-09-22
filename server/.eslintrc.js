@@ -24,6 +24,8 @@ module.exports = {
 		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"no-var": "error",
 		"prefer-const": "error",
+		"@typescript-eslint/no-unsafe-assignment": "off",
+		"@typescript-eslint/no-unsafe-member-access": "off",
     },
 	"overrides": [
     {

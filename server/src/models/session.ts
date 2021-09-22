@@ -42,7 +42,7 @@ export class Session {
         return session;
     }
 
-    public static async logoutAll(username: string, exceptSessionID: string = ""): Promise<void> {
+    public static async logoutAll(username: string, exceptSessionID = ""): Promise<void> {
         await sql.invalidateAll({
             $username: username,
             $session_id: exceptSessionID,

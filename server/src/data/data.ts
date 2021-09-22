@@ -29,7 +29,7 @@ export class Connection {
                         return;
                     }
                     resolve();
-                })
+                });
             });
         }
 
@@ -41,8 +41,9 @@ export class Connection {
                         reject(err);
                         return;
                     }
-                    this.setConnectionDefaults();
-                    resolve();
+                    this.setConnectionDefaults()
+                        .then(resolve)
+                        .catch(reject);
                 });
         });
     }
@@ -52,13 +53,14 @@ export class Connection {
     }
 
     // query runs an unprepared query, all application queries should use prepared statements
-    public async query<T>(sql: string, params?: any): Promise<T[]> {
+    public async query<T>(sql: string, params?: T): Promise<T[]> {
         if (!this.cnn) {
             await this.open();
         }
 
         return new Promise<T[]>((resolve, reject) => {
-            this.cnn!.all(sql, params, (err: Error, rows: T[]) => {
+            if (!this.cnn) { throw new Error("Connection is empty"); }
+            this.cnn.all(sql, params, (err: Error, rows: T[]) => {
                 if (err) {
                     reject(err);
                     return;
@@ -74,7 +76,8 @@ export class Connection {
         }
 
         return new Promise<sqlite.Statement>((resolve, reject) => {
-            this.cnn!.prepare(sql, (statement: sqlite.Statement, err: Error) => {
+            if (!this.cnn) { throw new Error("Connection is empty"); }
+            this.cnn.prepare(sql, (statement: sqlite.Statement, err: Error) => {
                 if (err) {
                     reject(err);
                     return;
@@ -86,14 +89,14 @@ export class Connection {
     }
 
     public prepareQuery<Params, Results>(sql: string): (params: Params) => Promise<Results[]> {
-        var statement: sqlite.Statement;
+        let statement: sqlite.Statement;
         return async (params: Params): Promise<Results[]> => {
             if (!statement) {
                 statement = await this.prepStatement(sql);
             }
 
             return new Promise<Results[]>((resolve, reject) => {
-                statement.all(params, (err: Error | null, rows: any[]) => {
+                statement.all(params, (err, rows) => {
                     if (err) {
                         reject(err);
                         return;
@@ -105,14 +108,14 @@ export class Connection {
     }
 
     public prepareUpdate<Params>(sql: string): (params: Params) => Promise<changeResult> {
-        var statement: sqlite.Statement;
+        let statement: sqlite.Statement;
         return async (params: Params): Promise<changeResult> => {
             if (!statement) {
                 statement = await this.prepStatement(sql);
             }
 
             return new Promise<changeResult>((resolve, reject) => {
-                statement.run(params, function (err: Error | null) {
+                statement.run(params, function (err) {
                     if (err) {
                         reject(err);
                         return;
@@ -128,23 +131,18 @@ export class Connection {
             await this.open();
         }
 
-        return new Promise<T>(async (resolve, reject) => {
-            this.cnn!.serialize(async () => {
-                let result;
-                try {
-                    try {
-                        await this.query("BEGIN");
-                        result = await wrap();
+        return new Promise<T>((resolve, reject) => {
+            if (!this.cnn) { throw new Error("Connection is empty"); }
+            this.cnn.serialize(() => {
+                this.query("BEGIN")
+                    .then(async () => {
+                        const result = await wrap();
                         await this.query("COMMIT");
-                    } catch (err) {
+                        resolve(result);
+                    }).catch(async (err) => {
                         await this.query("ROLLBACK");
-                        throw err;
-                    }
-                } catch (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(result);
+                        reject(err);
+                    });
             });
         });
     }
@@ -153,12 +151,12 @@ export class Connection {
         return new Promise((resolve, reject) => {
             if (!this.cnn) {
                 resolve(); // already closed
-                return
+                return;
             }
             this.cnn.close((err: Error | null) => {
                 if (err != null) {
                     reject(err);
-                    return
+                    return;
                 }
                 this.cnn = undefined;
                 resolve();
@@ -169,7 +167,7 @@ export class Connection {
 
 // random returns a URL safe string of random data of bits size
 export function random(bits: number): string {
-    return crypto.randomBytes(bits / 8).toString("base64").replace(/\+/g, "").replace(/\//g, "").replace(/\=+$/, "");
+    return crypto.randomBytes(bits / 8).toString("base64").replace(/\+/g, "").replace(/\//g, "").replace(/=+$/, "");
 }
 
 export const sysdb = new Connection(config.dataDir.startsWith(":memory:") ? config.dataDir : path.join(config.dataDir, SYSTEMDBNAME));

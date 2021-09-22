@@ -15,6 +15,7 @@ interface IUpload {
 }
 
 declare global {
+    /* eslint @typescript-eslint/no-namespace: "off" */
     namespace Express {
         interface Request {
             session?: Session;
@@ -28,7 +29,7 @@ export function session() {
     // usually only the security service will be using it's own getSession func to get the session directly
     // from the database. Everyone else will use the default get session which will make a call to the security
     // service's REST API
-    return async (req: express.Request, _: express.Response, next: express.NextFunction) => {
+    return async (req: express.Request, _: express.Response, next: express.NextFunction): Promise<void> => {
         try {
             let token = "";
 
@@ -50,7 +51,7 @@ export function session() {
     };
 }
 
-export function errors(err: Error, req: express.Request, res: express.Response, _: express.NextFunction) {
+export function errors(err: Error, req: express.Request, res: express.Response,): void {
     if (err instanceof fail.Failure) {
         log.warning(err);
         res.status(err.status).send({ message: err.message });
@@ -77,7 +78,7 @@ export function errors(err: Error, req: express.Request, res: express.Response, 
 export const CSRFHeader = "x-csrftoken";
 
 // handles csrf token handling with the session, must come after session is set
-export function csrf(req: express.Request, res: express.Response, next: express.NextFunction) {
+export function csrf(req: express.Request, res: express.Response, next: express.NextFunction): void {
     res.setHeader("Access-Control-Expose-Headers", CSRFHeader);
     if (!req.session) {
         return next();
