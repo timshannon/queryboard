@@ -77,14 +77,14 @@ export class Connection {
 
         return new Promise<sqlite.Statement>((resolve, reject) => {
             if (!this.cnn) { throw new Error("Connection is empty"); }
-            this.cnn.prepare(sql, (statement: sqlite.Statement, err: Error) => {
+            const statement = this.cnn.prepare(sql, (err) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                resolve(statement);
             });
 
+            resolve(statement);
         });
     }
 

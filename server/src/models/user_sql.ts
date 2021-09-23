@@ -82,7 +82,7 @@ export default {
             and     version = $version
         `),
         count: sysdb.prepareQuery<void, { count: number }>(`
-            select  count(*)
+            select  count(*) as count
             from    users
         `),
     },

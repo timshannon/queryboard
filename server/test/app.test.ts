@@ -42,10 +42,9 @@ describe("GET /random-url", () => {
         expect(res.length).toBe(1);
         expect(res[0].count).toBe(1);
         expect(usr.length).toBe(1);
-        expect(usr[0].admin).toBe(true);
+        expect(usr[0].admin).toBeTruthy();
         expect(usr[0].username).toBe("admin");
     });
-
 
 });
 

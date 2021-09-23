@@ -1,16 +1,16 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+process.env.DATADIR = ":memory:";
+process.env.STARTUPPASSWORD = "AdminPassword";
 
 import app from "../src/app";
 import { sysdb } from "../src/data/data";
-import { User } from "../src/models/user";
-import { Password } from "../src/models/password";
 
 import { addDays, isAfter, isBefore } from "date-fns";
 import request from "supertest";
 
 const user = {
-    username: "tester",
-    password: "testP@ssw0rd1",
+    username: "admin",
+    password: "TestPassword!1",
 };
 
 beforeAll(async () => {
@@ -20,13 +20,10 @@ beforeAll(async () => {
         });
     });
     await p;
-
-    const u = await Password.create(user.username, user.password, { username: "testing" } as User);
-    await u.insert();
 });
 
 describe("POST /v1/sessions/password", () => {
-    it.only("should require username and password", async () => {
+    it("should require username and password", async () => {
         const res = await request(app).post("/v1/sessions/password");
         expect(res.status).toBe(400);
         expect(res.body).toEqual({ message: "The field 'username' is required" });

@@ -51,7 +51,7 @@ export function session() {
     };
 }
 
-export function errors(err: Error, req: express.Request, res: express.Response,): void {
+export function errors(err: Error, req: express.Request, res: express.Response, _: express.NextFunction): void {
     if (err instanceof fail.Failure) {
         log.warning(err);
         res.status(err.status).send({ message: err.message });

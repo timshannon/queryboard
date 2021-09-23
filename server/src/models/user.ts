@@ -9,7 +9,7 @@ import sql from "./user_sql";
 import * as fail from "../fail";
 import config from "../config";
 
-import { isAfter, isBefore } from "date-fns";
+import { isAfter, isBefore, addSeconds, addDays } from "date-fns";
 
 const maxNameLength = 500;
 
@@ -86,6 +86,18 @@ export class User {
             admin: true,
         });
 
+        const fakeSession = new Session({
+            id: random(256),
+            username,
+            csrfToken: random(256),
+            csrfDate: new Date(),
+            valid: true,
+            ipAddress: "fakeSessionForFirstUser",
+            expires: addSeconds(new Date(), 10),
+            userAgent: "fakeSessionForFirstUser",
+        });
+
+
         const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(tempPassword);
 
         const pwd = new Password({
@@ -93,14 +105,15 @@ export class User {
             version: 0,
             hash,
             hashVersion: pwdSvc.currentVersion,
-            expiration: new Date(),
-            sessionID: "",
-            createdBy: "",
+            expiration: addDays(new Date(), 1),
+            sessionID: fakeSession.id,
+            createdBy: username,
             createdDate: new Date(),
         });
 
         await sysdb.beginTran(async () => {
             await newUser.insert("");
+            await fakeSession.insert();
             await pwd.insert();
         });
 
@@ -211,10 +224,9 @@ export class User {
             if (!(await session.IsAdmin())) {
                 throw new fail.Unauthorized("You must be an admin to set a user's password");
             }
-            // TODO: expire password if set by admin
         }
 
-        return currentPass.update(newPassword, session);
+        return currentPass.update(newPassword, session, !self);
     }
 
     public async insert(createdBy: string): Promise<void> {

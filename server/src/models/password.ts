@@ -132,7 +132,7 @@ export class Password {
     }
 
     public async insert(): Promise<void> {
-        if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {
+        if (this.sessionID == undefined || this.createdBy == undefined) {
             throw new Error("Cannot insert password due to missing fields");
         }
 
@@ -143,9 +143,9 @@ export class Password {
             $hash_version: this.hashVersion,
             $expiration: this.expiration,
             $session_id: this.sessionID,
-            $updated_date: this.updatedDate,
-            $updated_by: this.updatedBy,
-            $created_date: this.createdDate,
+            $updated_date: this.updatedDate || new Date(),
+            $updated_by: this.updatedBy || this.createdBy,
+            $created_date: this.createdDate || new Date(),
             $created_by: this.createdBy,
         });
     }
@@ -170,9 +170,8 @@ export class Password {
     /* Scenarios in which a password can be set:
         * Already logged in user is changing their own password
         * Admin is changing an other user's password
-        * Password resets from emailed token
      */
-    public async update(password: string, session: Session): Promise<void> {
+    public async update(password: string, session: Session, mustChange: boolean): Promise<void> {
         await pwdSvc.validate(password);
 
         if (await this.compare(password)) {
@@ -198,10 +197,14 @@ export class Password {
         }
 
         const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(password);
-        const expireDays = await settings.password.expirationDays.get();
         let expires: undefined | Date;
-        if (expireDays !== 0) {
-            expires = addDays(new Date(), expireDays);
+        if (mustChange) {
+            expires = addDays(new Date(), 1); // if admin set password, the user has 1 day to change it
+        } else {
+            const expireDays = await settings.password.expirationDays.get();
+            if (expireDays !== 0) {
+                expires = addDays(new Date(), expireDays);
+            }
         }
 
         if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {

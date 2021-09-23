@@ -32,7 +32,7 @@ export default {
             $ip_address,
             $user_agent,
             $expires,
-            $created_date,
+            $created_date
         )
     `),
     logout: sysdb.prepareUpdate<{

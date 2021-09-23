@@ -114,6 +114,7 @@ export class Session {
             $expires: this.expires,
             $created_date: new Date(),
         });
+
     }
 
     public async user(): Promise<User> {
