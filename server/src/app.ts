@@ -22,7 +22,7 @@ app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
-// app.use(middleware.session());
+app.use(middleware.session());
 app.use(middleware.csrf);
 
 // set routes
