@@ -1,6 +1,6 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 process.env.DATADIR = ":memory:";
-process.env.STARTUPPASSWORD = "AdminPassword";
+process.env.STARTUPPASSWORD = "AdminPassword!1";
 
 import app from "../src/app";
 import { sysdb } from "../src/data/data";
@@ -10,7 +10,7 @@ import request from "supertest";
 
 const user = {
     username: "admin",
-    password: "TestPassword!1",
+    password: process.env.STARTUPPASSWORD,
 };
 
 beforeAll(async () => {
@@ -84,7 +84,7 @@ describe("POST /v1/sessions/password", () => {
         });
 
         it("should not allow a logon if user hasn't started yet", async () => {
-            await sysdb.query("update users set start_date = $start where usrname = $username",
+            await sysdb.query("update users set start_date = $start where username = $username",
                 { $start: addDays(new Date(), 1), $username: user.username });
             const res = await request(app).post("/v1/sessions/password")
                 .send({

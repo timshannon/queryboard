@@ -76,7 +76,6 @@ export class Password {
         // TODO: Ratelimit password attempts
         return await sysdb.beginTran<Session>(async (): Promise<Session> => {
             const res = await sql.login({ $username: username });
-
             if (res.length === 0) {
                 throw errLogin;
             }
