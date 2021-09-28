@@ -1,6 +1,6 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import * as sqlite from "sqlite3";
+import sqlite from "better-sqlite3";
 import crypto from "crypto";
 import path from "path";
 import * as fs from "fs";
@@ -9,159 +9,54 @@ import config from "../config";
 
 const SYSTEMDBNAME = "system.db";
 
-type changeResult = { lastID: number, changes: number };
+type changeResult = { lastID: number | BigInt, changes: number };
 
 export class Connection {
-    private cnn?: sqlite.Database;
+    public readonly cnn: sqlite.Database;
 
-    constructor(public readonly filepath: string) {}
+    constructor(public readonly filepath: string, public readonly options?: sqlite.Options) {
+        if (!this.inMemory) {
+            fs.mkdirSync(path.dirname(this.filepath), { recursive: true });
+        }
+
+        this.cnn = new sqlite(this.filepath, this.options);
+        this.cnn.pragma("journal_mode = WAL");
+        this.cnn.pragma("PRAGMA foreign_keys = ON");
+    }
 
     public get inMemory(): boolean {
-        return this.filepath.startsWith(":memory:");
+        return this.cnn.memory;
     }
 
-    public async open(): Promise<void> {
-        if (!this.inMemory) {
-            await new Promise<void>((resolve, reject) => {
-                fs.mkdir(path.dirname(this.filepath), { recursive: true }, (err) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve();
-                });
-            });
-        }
-
-        return new Promise((resolve, reject) => {
-            this.cnn = new sqlite.Database(this.filepath, sqlite.OPEN_CREATE | sqlite.OPEN_READWRITE,
-                (err: Error | null) => {
-                    if (err) {
-                        this.cnn = undefined;
-                        reject(err);
-                        return;
-                    }
-                    this.setConnectionDefaults()
-                        .then(resolve)
-                        .catch(reject);
-                });
-        });
+    // query runs an adhoc query, all application queries should use prepared statements
+    public query<T>(sql: string, params?: unknown): T[] {
+        const stmt = this.cnn.prepare(sql);
+        const res = stmt.all(params as T);
+        return res as T[];
     }
 
-    private async setConnectionDefaults(): Promise<void> {
-        await this.query("PRAGMA foreign_keys = ON");
-    }
+    public prepareQuery<Params, Results>(sql: string): (params: Params) => Results[] {
+        const statement = this.cnn.prepare(sql);
 
-    // query runs an unprepared query, all application queries should use prepared statements
-    public async query<T>(sql: string, params?: T): Promise<T[]> {
-        if (!this.cnn) {
-            await this.open();
-        }
-
-        return new Promise<T[]>((resolve, reject) => {
-            if (!this.cnn) { throw new Error("Connection is empty"); }
-            this.cnn.all(sql, params, (err: Error, rows: T[]) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(rows);
-            });
-        });
-    }
-
-    private async prepStatement(sql: string): Promise<sqlite.Statement> {
-        if (!this.cnn) {
-            await this.open();
-        }
-
-        return new Promise<sqlite.Statement>((resolve, reject) => {
-            if (!this.cnn) { throw new Error("Connection is empty"); }
-            const statement = this.cnn.prepare(sql, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-            });
-
-            resolve(statement);
-        });
-    }
-
-    public prepareQuery<Params, Results>(sql: string): (params: Params) => Promise<Results[]> {
-        let statement: sqlite.Statement;
-        return async (params: Params): Promise<Results[]> => {
-            if (!statement) {
-                statement = await this.prepStatement(sql);
-            }
-
-            return new Promise<Results[]>((resolve, reject) => {
-                statement.all(params, (err, rows) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve(rows as Results[]);
-                });
-            });
+        return (params: Params): Results[] => {
+            return statement.all(params) as Results[];
         };
     }
 
-    public prepareUpdate<Params>(sql: string): (params: Params) => Promise<changeResult> {
-        let statement: sqlite.Statement;
-        return async (params: Params): Promise<changeResult> => {
-            if (!statement) {
-                statement = await this.prepStatement(sql);
-            }
-
-            return new Promise<changeResult>((resolve, reject) => {
-                statement.run(params, function (err) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve({ changes: this.changes, lastID: this.lastID });
-                });
-            });
+    public prepareUpdate<Params>(sql: string): (params: Params) => changeResult {
+        const statement = this.cnn.prepare(sql);
+        return (params: Params): changeResult => {
+            const res = statement.run(params);
+            return { changes: res.changes, lastID: res.lastInsertRowid };
         };
     }
 
-    public async beginTran<T>(wrap: () => Promise<T>): Promise<T> {
-        if (!this.cnn) {
-            await this.open();
-        }
-
-        return new Promise<T>((resolve, reject) => {
-            if (!this.cnn) { throw new Error("Connection is empty"); }
-            this.cnn.serialize(() => {
-                this.query("BEGIN")
-                    .then(async () => {
-                        const result = await wrap();
-                        await this.query("COMMIT");
-                        resolve(result);
-                    }).catch(async (err) => {
-                        await this.query("ROLLBACK");
-                        reject(err);
-                    });
-            });
-        });
+    public beginTran<T>(wrap: () => T): T {
+        return this.cnn.transaction(wrap)();
     }
 
-    public close(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (!this.cnn) {
-                resolve(); // already closed
-                return;
-            }
-            this.cnn.close((err: Error | null) => {
-                if (err != null) {
-                    reject(err);
-                    return;
-                }
-                this.cnn = undefined;
-                resolve();
-            });
-        });
+    public close(): void {
+        this.cnn.close();
     }
 }
 

@@ -6,24 +6,22 @@ import * as fail from "../../fail";
 
 import express from "express";
 
-
-async function setSetting(session: Session, id: string, value?: unknown): Promise<void> {
+async function setSetting(session: Session, id: string, value?: any) {
     const keys = id.split(".");
     /* eslint @typescript-eslint/no-explicit-any: "off" */
     let setting: any = settings;
 
     for (const key of keys) {
-        if (key in setting) {
-            setting = setting[key];
-            if (!setting) {
-                throw new fail.NotFound(`No setting found with an id of ${id}`);
-            }
+        setting = setting[key];
+        if (!setting) {
+            throw new fail.NotFound(`No setting found with an id of ${id}`);
         }
     }
-    const user = await session.user();
 
+    const user = await session.user();
     await (setting as ISetting<unknown>).set(user, value);
 }
+
 
 export async function set(req: express.Request, res: express.Response): Promise<void> {
     if (!req.session) {
