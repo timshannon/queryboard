@@ -12,6 +12,7 @@ import config from "../config";
 import { isAfter, isBefore, addSeconds, addDays } from "date-fns";
 
 const maxNameLength = 500;
+const testUsername = /^[a-zA-Z0-9-_]*$/i;
 
 interface IUserFields {
     username: string;
@@ -45,7 +46,7 @@ export class User {
             admin,
         });
 
-        const pwd = await Password.create(username, tempPassword, who);
+        const pwd = await Password.create(username, tempPassword, who, session.id);
 
         await sysdb.beginTran(async () => {
             await newUser.insert(who.username);
@@ -217,6 +218,10 @@ export class User {
                 throw new fail.Failure("You must provide your old password to set a new password");
             }
 
+            if (currentPass.expired()) {
+                throw new fail.Failure("Your password has expired");
+            }
+
             if (!await currentPass.compare(oldPassword)) {
                 throw new fail.Failure("Your old password is incorrect");
             }
@@ -253,6 +258,10 @@ export class User {
     private validate(): void {
         if (this.username.length > maxNameLength) {
             throw new fail.Failure(`username is longer than ${maxNameLength} characters`);
+        }
+
+        if (!testUsername.test(this.username)) {
+            throw new fail.Failure("username's can only contain letters, numbers and '-' or '_'");
         }
     }
 }

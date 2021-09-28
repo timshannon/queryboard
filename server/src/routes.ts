@@ -37,8 +37,8 @@ function sessions(app: express.Express) {
 function users(app: express.Express) {
     // POST
 
-    route(app, false).post("/v1/users/password/:id", user.createPassword,
-        param("username").isRequired().isString().description("username of the user to create"),
+    route(app, false).post("/v1/users/", user.createPassword,
+        body("username").isRequired().isString().description("username of the user to create"),
         body("password").isRequired().isString().description("temp password for the new user"));
 
     // GET
@@ -54,7 +54,7 @@ function users(app: express.Express) {
         body("endDate").isDate().description("updated end date of user, leave undefined if no change"),
     );
 
-    route(app).put("/v1/users/:id/password", user.updatePassword,
+    route(app).put("/v1/users/:username/password", user.updatePassword,
         param("username").isRequired().isString().description("username"),
         body("newPassword").isRequired().isString().description("new password"),
         body("oldPassword").isRequired().isString().description("old password"),

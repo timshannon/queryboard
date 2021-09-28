@@ -26,7 +26,7 @@ interface IPasswordFields {
 
 export class Password {
     public static async create(username: string, password: string, createdBy: User,
-        sessionID?: string): Promise<Password> {
+        sessionID: string): Promise<Password> {
 
         const expireDays = await settings.password.expirationDays.get();
         let expiration: undefined | Date;
