@@ -6,7 +6,7 @@ import * as fail from "../../fail";
 
 import express from "express";
 
-async function setSetting(session: Session, id: string, value?: any) {
+function setSetting(session: Session, id: string, value?: any) {
     const keys = id.split(".");
     /* eslint @typescript-eslint/no-explicit-any: "off" */
     let setting: any = settings;
@@ -18,26 +18,26 @@ async function setSetting(session: Session, id: string, value?: any) {
         }
     }
 
-    const user = await session.user();
-    await (setting as ISetting<unknown>).set(user, value);
+    const user = session.user();
+    (setting as ISetting<unknown>).set(user, value);
 }
 
 
-export async function set(req: express.Request, res: express.Response): Promise<void> {
+export function set(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
 
-    await setSetting(req.session, req.body.id, req.body.value);
+    setSetting(req.session, req.body.id, req.body.value);
     res.send();
 }
 
-export async function setDefault(req: express.Request, res: express.Response): Promise<void> {
+export function setDefault(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
 
-    await setSetting(req.session, req.body.id);
+    setSetting(req.session, req.body.id);
     res.send();
 }
 

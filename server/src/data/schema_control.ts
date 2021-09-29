@@ -3,7 +3,7 @@
 import log from "../log";
 import * as data from "./data";
 
-type Schema = string[];
+export type Schema = string[];
 
 const sql = {
     createTable: `
@@ -33,15 +33,15 @@ const sql = {
     `,
 };
 
-export async function ensureSchema(cnn: data.Connection, schema: Schema): Promise<void> {
-    await cnn.beginTran(async (): Promise<void> => {
-        await ensureSchemaTable(cnn);
-        await ensureSchemaVer(schema, cnn);
+export function ensureSchema(cnn: data.Connection, schema: Schema): void {
+    cnn.beginTran((): void => {
+        ensureSchemaTable(cnn);
+        ensureSchemaVer(schema, cnn);
     });
 }
 
-async function ensureSchemaTable(cnn: data.Connection): Promise<void> {
-    const result = await cnn.query<{ name: string }>(sql.tableExists);
+function ensureSchemaTable(cnn: data.Connection): void {
+    const result = cnn.query<{ name: string }>(sql.tableExists);
 
     if (result.length !== 0) {
         // table already exists
@@ -49,29 +49,16 @@ async function ensureSchemaTable(cnn: data.Connection): Promise<void> {
     }
 
     log.info("Creating schema_versions table");
-    await cnn.query(sql.createTable);
+    cnn.query(sql.createTable);
 }
 
 
-async function ensureSchemaVer(schema: Schema, cnn: data.Connection): Promise<void> {
+function ensureSchemaVer(schema: Schema, cnn: data.Connection): void {
     const currentVer = schema.length - 1;
-    const res = await cnn.query<{ version: number, locked: boolean }>(sql.getLastSchema);
+    const res = cnn.query<{ version: number, locked: boolean }>(sql.getLastSchema);
     let dbVer = -1;
 
     if (res.length > 0) {
-        if (res[0].locked) {
-            log.info("schema table locked. Waiting...");
-            await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    ensureSchemaVer(schema, cnn)
-                        .then(resolve)
-                        .catch(reject);
-
-                }, 1000);
-            });
-            return;
-        }
-
         dbVer = res[0].version;
     }
 
@@ -81,18 +68,18 @@ async function ensureSchemaVer(schema: Schema, cnn: data.Connection): Promise<vo
     }
 
     if (dbVer < currentVer) {
-        await cnn.query(sql.lockSchema, { $version: dbVer });
+        cnn.query(sql.lockSchema, { version: dbVer });
         dbVer++;
 
         log.info(`Updating schema  in ${cnn.filepath} to version ${dbVer}`);
-        await cnn.query(schema[dbVer]);
-        await cnn.query(sql.insertSchema, {
-            $version: dbVer,
-            $script: schema[dbVer],
-            $locked: false,
-            $run_date: new Date(),
+        cnn.query(schema[dbVer]);
+        cnn.query(sql.insertSchema, {
+            version: dbVer,
+            script: schema[dbVer],
+            locked: false,
+            run_date: new Date(),
         });
-        await ensureSchemaVer(schema, cnn);
+        ensureSchemaVer(schema, cnn);
         return;
     }
 

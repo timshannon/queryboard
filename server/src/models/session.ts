@@ -20,12 +20,11 @@ interface ISessionFields {
 }
 
 export class Session {
-    public static async create(user: User, rememberMe: boolean, ipAddress: string,
-        userAgent?: string): Promise<Session> {
+    public static create(user: User, rememberMe: boolean, ipAddress: string, userAgent?: string): Session {
         let expires = addDays(new Date(), 1);
         // if not rememberMe session, then session expires in the browser when it closes, and on the server in 1 day
         if (rememberMe) {
-            const days = await settings.session.expirationDays.get();
+            const days = settings.session.expirationDays.get();
             expires = addDays(new Date(), days);
         }
 
@@ -38,20 +37,20 @@ export class Session {
             ipAddress,
             expires, userAgent,
         });
-        await session.insert();
+        session.insert();
         return session;
     }
 
-    public static async logoutAll(username: string, exceptSessionID = ""): Promise<void> {
-        await sql.invalidateAll({
-            $username: username,
-            $session_id: exceptSessionID,
-            $expires: new Date(),
+    public static logoutAll(username: string, exceptSessionID = ""): void {
+        sql.invalidateAll({
+            username: username,
+            session_id: exceptSessionID,
+            expires: new Date(),
         });
     }
 
-    public static async get(id: string): Promise<Session | null> {
-        const res = await sql.get({ $session_id: id });
+    public static get(id: string): Session | null {
+        const res = sql.get({ session_id: id });
         if (res.length === 0) {
             return null;
         }
@@ -101,38 +100,38 @@ export class Session {
         this.userAgent = args.userAgent;
     }
 
-    public async insert(): Promise<void> {
+    public insert(): void {
         this.validate();
-        await sql.insert({
-            $session_id: this.id,
-            $username: this.username,
-            $valid: this.valid,
-            $csrf_token: this.csrfToken,
-            $csrf_date: this.csrfDate,
-            $ip_address: this.ipAddress,
-            $user_agent: this.userAgent || "",
-            $expires: this.expires,
-            $created_date: new Date(),
+        sql.insert({
+            session_id: this.id,
+            username: this.username,
+            valid: this.valid,
+            csrf_token: this.csrfToken,
+            csrf_date: this.csrfDate,
+            ip_address: this.ipAddress,
+            user_agent: this.userAgent || "",
+            expires: this.expires,
+            created_date: new Date(),
         });
 
     }
 
-    public async user(): Promise<User> {
+    public user(): User {
         if (this._user) {
             return this._user;
         }
 
-        this._user = await User.get(this, this.username);
+        this._user = User.get(this, this.username);
         return this._user;
     }
 
-    public async IsAdmin(): Promise<boolean> {
-        return (await this.user()).admin;
+    public IsAdmin(): boolean {
+        return (this.user()).admin;
     }
 
     // logs out of the a session
-    public async logout(): Promise<void> {
-        await sql.logout({ $session_id: this.id });
+    public logout(): void {
+        sql.logout({ session_id: this.id });
     }
 
 

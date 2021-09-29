@@ -13,15 +13,6 @@ const user = {
     password: process.env.STARTUPPASSWORD,
 };
 
-beforeAll(async () => {
-    const p = new Promise<void>((resolve) => {
-        app.on("ready", () => {
-            resolve();
-        });
-    });
-    await p;
-});
-
 describe("POST /v1/sessions/password", () => {
     it("should require username and password", async () => {
         const res = await request(app).post("/v1/sessions/password");
@@ -78,14 +69,14 @@ describe("POST /v1/sessions/password", () => {
     });
 
     describe("inactive users", () => {
-        afterEach(async () => {
-            await sysdb.query("update users set start_date = $start, end_date = $end where username = $username",
-                { $start: addDays(new Date(), -1), $end: null, $username: user.username });
+        afterEach(() => {
+            sysdb.query("update users set start_date = $start, end_date = $end where username = $username",
+                { start: addDays(new Date(), -1), end: null, username: user.username });
         });
 
         it("should not allow a logon if user hasn't started yet", async () => {
-            await sysdb.query("update users set start_date = $start where username = $username",
-                { $start: addDays(new Date(), 1), $username: user.username });
+            sysdb.query("update users set start_date = $start where username = $username",
+                { start: addDays(new Date(), 1), username: user.username });
             const res = await request(app).post("/v1/sessions/password")
                 .send({
                     username: user.username,
@@ -95,8 +86,8 @@ describe("POST /v1/sessions/password", () => {
         });
 
         it("should not allow a logon if user has been ended", async () => {
-            await sysdb.query("update users set end_date = $end where username = $username",
-                { $end: addDays(new Date(), -1), $username: user.username });
+            sysdb.query("update users set end_date = $end where username = $username",
+                { end: addDays(new Date(), -1), username: user.username });
             const res = await request(app).post("/v1/sessions/password")
                 .send({
                     username: user.username,

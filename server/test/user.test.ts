@@ -21,13 +21,6 @@ const admin = {
 };
 
 beforeAll(async () => {
-    const p = new Promise<void>((resolve) => {
-        app.on("ready", () => {
-            resolve();
-        });
-    });
-    await p;
-
     // login admin
     let res = await request(app).post("/v1/sessions/password")
         .send({

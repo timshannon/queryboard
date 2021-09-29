@@ -5,26 +5,26 @@ import { User } from "./user";
 import { sysdb } from "../data/data";
 
 export interface ISetting<T> {
-    get(): Promise<T>;
-    set(user: User, value?: T): Promise<void>;
+    get(): T;
+    set(user: User, value?: T): void;
 }
 
 // TODO: Cache these values
 
 const sql = {
     insert: sysdb.prepareUpdate<{
-        $setting_id: string, $value: string, $updated_by: string, $updated_date: Date,
+        setting_id: string, value: string, updated_by: string, updated_date: Date,
     }>(`
         insert into settings (setting_id, value, updated_by, updated_date)
         values ($setting_id, $value, $updated_by, $updated_date)
     `),
     delete: sysdb.prepareUpdate<{
-        $setting_id: string,
+        setting_id: string,
     }>(`
         delete from settings where setting_id = $setting_id
     `),
     get: sysdb.prepareQuery<{
-        $setting_id: string,
+        setting_id: string,
     }, {
         value: string,
     }>("select value from settings where setting_id = $setting_id"),
@@ -49,24 +49,24 @@ export default {
     },
 };
 
-async function setValue(user: User, id: string, value: { toString(): string }): Promise<void> {
+function setValue(user: User, id: string, value: { toString(): string }): void {
     if (!user.admin) {
         throw new fail.Unauthorized("Only admins can update settings");
     }
 
-    await sysdb.beginTran(async (): Promise<void> => {
-        await sql.delete({ $setting_id: id });
-        await sql.insert({
-            $setting_id: id,
-            $value: value.toString(),
-            $updated_by: user.username,
-            $updated_date: new Date(),
+    sysdb.beginTran((): void => {
+        sql.delete({ setting_id: id });
+        sql.insert({
+            setting_id: id,
+            value: value.toString(),
+            updated_by: user.username,
+            updated_date: new Date(),
         });
     });
 }
 
-async function getValue(id: string): Promise<string | null> {
-    const res = await sql.get({ $setting_id: id });
+function getValue(id: string): string | null {
+    const res = sql.get({ setting_id: id });
 
     if (res.length === 0) {
         return null;
@@ -75,16 +75,16 @@ async function getValue(id: string): Promise<string | null> {
     return res[0].value;
 }
 
-async function getBoolean(id: string, defaultValue: boolean): Promise<boolean> {
-    const strVal = await getValue(id);
+function getBoolean(id: string, defaultValue: boolean): boolean {
+    const strVal = getValue(id);
     if (strVal == null) {
         return defaultValue;
     }
     return strVal === "true";
 }
 
-async function getNumber(id: string, defaultValue: number): Promise<number> {
-    const strVal = await getValue(id);
+function getNumber(id: string, defaultValue: number): number {
+    const strVal = getValue(id);
     if (strVal == null) {
         return defaultValue;
     }
@@ -101,28 +101,28 @@ async function getNumber(id: string, defaultValue: number): Promise<number> {
 
 function booleanSetting(id: string, defaultValue: boolean): ISetting<boolean> {
     return {
-        get: async (): Promise<boolean> => {
+        get: (): boolean => {
             return getBoolean(id, defaultValue);
         },
-        set: async (user: User, value = defaultValue): Promise<void> => {
-            return await setValue(user, id, value);
+        set: (user: User, value = defaultValue): void => {
+            return setValue(user, id, value);
         },
     };
 }
 
 function numberSetting(id: string, defaultValue: number, min?: number, max?: number): ISetting<number> {
     return {
-        get: async (): Promise<number> => {
+        get: (): number => {
             return getNumber(id, defaultValue);
         },
-        set: async (user: User, value = defaultValue): Promise<void> => {
+        set: (user: User, value = defaultValue): void => {
             if (min !== undefined && value < min) {
                 throw new fail.Failure(`${id} must be greater than ${min}`);
             }
             if (max !== undefined && value > max) {
                 throw new fail.Failure(`${id} must be less than ${max}`);
             }
-            return await setValue(user, id, value.toString());
+            return setValue(user, id, value.toString());
         },
     };
 }

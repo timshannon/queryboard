@@ -3,15 +3,15 @@ import { sysdb } from "../data/data";
 
 export default {
     insert: sysdb.prepareUpdate<{
-        $session_id: string,
-        $username: string,
-        $valid: boolean,
-        $csrf_token: string,
-        $csrf_date: Date,
-        $ip_address: string,
-        $user_agent: string,
-        $expires: Date,
-        $created_date: Date,
+        session_id: string,
+        username: string,
+        valid: boolean,
+        csrf_token: string,
+        csrf_date: Date,
+        ip_address: string,
+        user_agent: string,
+        expires: Date,
+        created_date: Date,
     }>(`
         insert into sessions (
             session_id,
@@ -36,12 +36,12 @@ export default {
         )
     `),
     logout: sysdb.prepareUpdate<{
-        $session_id: string,
+        session_id: string,
     }>(`
         update sessions set valid = FALSE where session_id = $session_id
     `),
     get: sysdb.prepareQuery<{
-        $session_id: string,
+        session_id: string,
     }, {
         session_id: string,
         username: string,
@@ -64,7 +64,7 @@ export default {
         where   session_id = $session_id
     `),
     history: sysdb.prepareQuery<{
-        $username: string,
+        username: string,
     }, {
         username: string,
         valid: boolean,
@@ -85,13 +85,13 @@ export default {
         order by created_date desc
     `),
     updateCSRF: sysdb.prepareUpdate<{
-        $csrf_token: string,
-        $session_id: string,
+        csrf_token: string,
+        session_id: string,
     }>("update sessions set csrf_token = $csrf_token where session_id = $session_id"),
     invalidateAll: sysdb.prepareUpdate<{
-        $username: string,
-        $session_id: string,
-        $expires: Date,
+        username: string,
+        session_id: string,
+        expires: Date,
     }>(`
         update  sessions
         set     valid = FALSE

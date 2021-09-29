@@ -34,7 +34,7 @@ class Route {
 
     constructor(public readonly app: express.Express, public readonly requireSession = true) {}
 
-    public get(path: string, handler: PromiseHandler, ...fields: IField[]) {
+    public get(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
         this.fields = fields;
         this.app.get(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
@@ -44,7 +44,7 @@ class Route {
         });
     }
 
-    public put(path: string, handler: PromiseHandler, ...fields: IField[]) {
+    public put(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
         this.fields = fields;
         this.app.put(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
@@ -54,7 +54,7 @@ class Route {
         });
     }
 
-    public post(path: string, handler: PromiseHandler, ...fields: IField[]) {
+    public post(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
         this.fields = fields;
         this.app.post(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
@@ -64,7 +64,7 @@ class Route {
         });
     }
 
-    public delete(path: string, handler: PromiseHandler, ...fields: IField[]) {
+    public delete(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
         this.fields = fields;
         this.app.delete(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)

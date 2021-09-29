@@ -33,8 +33,8 @@ interface IUpdates {
 }
 
 export class User {
-    public static async create(session: Session, username: string, tempPassword: string, admin: boolean): Promise<User> {
-        const who = await session.user();
+    public static create(session: Session, username: string, tempPassword: string, admin: boolean): User {
+        const who = session.user();
         if (!who.admin) {
             throw new fail.Unauthorized("Only admins can create new users");
         }
@@ -46,22 +46,22 @@ export class User {
             admin,
         });
 
-        const pwd = await Password.create(username, tempPassword, who, session.id);
+        const pwd = Password.create(username, tempPassword, who, session.id);
 
-        await sysdb.beginTran(async () => {
-            await newUser.insert(who.username);
-            await pwd.insert();
+        sysdb.beginTran(() => {
+            newUser.insert(who.username);
+            pwd.insert();
         });
         return newUser;
     }
 
 
-    public static async get(session: Session, username: string): Promise<User> {
-        if (session.username !== username && !(await session.IsAdmin())) {
+    public static get(session: Session, username: string): User {
+        if (session.username !== username && !session.IsAdmin()) {
             throw new fail.Unauthorized("Only admins can view other user records");
         }
 
-        const res = await sql.user.get({ $username: username });
+        const res = sql.user.get({ username });
 
         if (res.length === 0) {
             throw new fail.NotFound();
@@ -72,8 +72,8 @@ export class User {
 
     // ensureAdmin ensures that at least one active admin exists.  If one doesn't it will create one
     // with a random password
-    public static async ensureAdmin(): Promise<void> {
-        if ((await sql.user.count())[0].count > 0) {
+    public static ensureAdmin(): void {
+        if ((sql.user.count())[0].count > 0) {
             return;
         }
 
@@ -99,7 +99,7 @@ export class User {
         });
 
 
-        const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(tempPassword);
+        const hash = pwdSvc.versions[pwdSvc.currentVersion].hash(tempPassword);
 
         const pwd = new Password({
             username,
@@ -112,10 +112,10 @@ export class User {
             createdDate: new Date(),
         });
 
-        await sysdb.beginTran(async () => {
-            await newUser.insert("");
-            await fakeSession.insert();
-            await pwd.insert();
+        sysdb.beginTran(() => {
+            newUser.insert("");
+            fakeSession.insert();
+            pwd.insert();
         });
 
         log.info(`No users found, "admin" user created with password "${tempPassword}"`);
@@ -176,16 +176,16 @@ export class User {
         return isAfter(theDate, this.startDate);
     }
 
-    public async update(session: Session, updates: IUpdates): Promise<void> {
+    public update(session: Session, updates: IUpdates): void {
         if (updates.startDate) {
-            if (!(await session.IsAdmin())) {
+            if (!(session.IsAdmin())) {
                 throw new fail.Unauthorized("Only admins can update a user's start date");
             }
             this.startDate = updates.startDate;
         }
 
         if (updates.endDate) {
-            if (!(await session.IsAdmin())) {
+            if (!(session.IsAdmin())) {
                 throw new fail.Unauthorized("Only admins can update a user's end date");
             }
             this.endDate = updates.endDate;
@@ -193,14 +193,14 @@ export class User {
 
         this.validate();
 
-        const res = await sql.user.update({
-            $username: this.username,
-            $version: updates.version,
-            $admin: this.admin,
-            $start_date: this.startDate,
-            $end_date: this.endDate,
-            $updated_date: new Date(),
-            $updated_by: session.username,
+        const res = sql.user.update({
+            username: this.username,
+            version: updates.version,
+            admin: this.admin,
+            start_date: this.startDate,
+            end_date: this.endDate,
+            updated_date: new Date(),
+            updated_by: session.username,
         });
 
         if (res.changes !== 1) {
@@ -208,10 +208,10 @@ export class User {
         }
     }
 
-    public async setPassword(session: Session, newPassword: string, oldPassword?: string): Promise<void> {
+    public setPassword(session: Session, newPassword: string, oldPassword?: string): void {
         const self = session.username === this.username;
 
-        const currentPass = await Password.get(this.username);
+        const currentPass = Password.get(this.username);
 
         if (self) {
             if (!oldPassword) {
@@ -222,11 +222,11 @@ export class User {
                 throw new fail.Failure("Your password has expired");
             }
 
-            if (!await currentPass.compare(oldPassword)) {
+            if (!currentPass.compare(oldPassword)) {
                 throw new fail.Failure("Your old password is incorrect");
             }
         } else {
-            if (!(await session.IsAdmin())) {
+            if (!(session.IsAdmin())) {
                 throw new fail.Unauthorized("You must be an admin to set a user's password");
             }
         }
@@ -234,23 +234,23 @@ export class User {
         return currentPass.update(newPassword, session, !self);
     }
 
-    public async insert(createdBy: string): Promise<void> {
+    public insert(createdBy: string): void {
         this.validate();
-        const res = await sql.user.get({ $username: this.username });
+        const res = sql.user.get({ username: this.username });
         if (res.length !== 0) {
             throw new fail.Failure(`A User with the username ${this.username} already exists`);
         }
 
-        await sql.user.insert({
-            $username: this.username,
-            $admin: this.admin,
-            $start_date: this.startDate,
-            $end_date: this.endDate,
-            $version: this.version,
-            $created_date: new Date(),
-            $updated_date: new Date(),
-            $created_by: createdBy,
-            $updated_by: createdBy,
+        sql.user.insert({
+            username: this.username,
+            admin: this.admin,
+            start_date: this.startDate,
+            end_date: this.endDate,
+            version: this.version,
+            created_date: new Date(),
+            updated_date: new Date(),
+            created_by: createdBy,
+            updated_by: createdBy,
         });
     }
 

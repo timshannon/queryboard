@@ -6,17 +6,17 @@ import * as pwdSvc from "../../services/password";
 import express from "express";
 import * as fail from "../../fail";
 
-export async function createPassword(req: express.Request, res: express.Response): Promise<void> {
+export function createPassword(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
 
-    const user = await User.create(req.session, req.body.username, req.body.password, req.body.admin);
+    const user = User.create(req.session, req.body.username, req.body.password, req.body.admin);
 
     res.status(201).send(user);
 }
 
-export async function get(req: express.Request, res: express.Response): Promise<void> {
+export function get(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
@@ -28,37 +28,36 @@ export async function get(req: express.Request, res: express.Response): Promise<
         username = req.session.username;
     }
 
-    const user = await User.get(req.session, username);
+    const user = User.get(req.session, username);
     res.send(user);
 }
 
-export async function update(req: express.Request, res: express.Response): Promise<void> {
+export function update(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
 
-    const user = await User.get(req.session, req.params.username);
+    const user = User.get(req.session, req.params.username);
 
-    await user.update(req.session, req.body);
+    user.update(req.session, req.body);
 
     res.send();
 }
 
-export async function updatePassword(req: express.Request, res: express.Response): Promise<void> {
+export function updatePassword(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
 
-    const user = await User.get(req.session, req.params.username);
+    const user = User.get(req.session, req.params.username);
 
-    await user.setPassword(req.session, req.body.newPassword, req.body.oldPassword);
+    user.setPassword(req.session, req.body.newPassword, req.body.oldPassword);
 
     res.send();
 }
 
-export async function passwordTest(req: express.Request, res: express.Response): Promise<void> {
-
+export function passwordTest(req: express.Request, res: express.Response): void {
     // TODO: Rate limit requests
-    await pwdSvc.validate(req.body.password);
+    pwdSvc.validate(req.body.password);
     res.send();
 }

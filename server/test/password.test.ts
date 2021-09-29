@@ -17,13 +17,6 @@ const admin = {
 };
 
 beforeAll(async () => {
-    const p = new Promise<void>((resolve) => {
-        app.on("ready", () => {
-            resolve();
-        });
-    });
-    await p;
-
     // admin
     let res = await request(app).post("/v1/sessions/password")
         .send({
@@ -130,8 +123,8 @@ describe("PUT /v1/users/:id/password", () => {
     });
 
     it("should not update a password if old password is expired", async () => {
-        await sysdb.query("update passwords set expiration = $expiration where username = $username",
-            { $expiration: addDays(new Date(), -1), $username: tester.username });
+        sysdb.query("update passwords set expiration = $expiration where username = $username",
+            { expiration: addDays(new Date(), -1), username: tester.username });
 
         const res = await request(app).put(`/v1/users/${tester.username}/password`)
             .set("Authorization", `Bearer ${tester.token}`)
@@ -143,8 +136,8 @@ describe("PUT /v1/users/:id/password", () => {
 
         expect(res.status).toBe(400);
         expect(res.body.message).toBe("Your password has expired");
-        await sysdb.query("update passwords set expiration = $expiration where username = $username",
-            { $expiration: null, $username: tester.username });
+        sysdb.query("update passwords set expiration = $expiration where username = $username",
+            { expiration: null, username: tester.username });
 
     });
 

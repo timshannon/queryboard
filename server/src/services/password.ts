@@ -8,17 +8,17 @@ import * as crypto from "crypto";
 import fs from "fs";
 
 interface IPasswordHash {
-    hash(password: string): Promise<string>;
-    compare(password: string, hash: string): Promise<boolean>;
+    hash(password: string): string;
+    compare(password: string, hash: string): boolean;
 }
 
 const bcryptPlusSha512 = {
     BCRYPT_ROUNDS: 10,
-    async hash(password: string): Promise<string> {
-        return bcrypt.hash(crypto.createHash("sha512").update(password).digest("hex"), this.BCRYPT_ROUNDS);
+    hash(password: string): string {
+        return bcrypt.hashSync(crypto.createHash("sha512").update(password).digest("hex"), this.BCRYPT_ROUNDS);
     },
-    async compare(password: string, hash: string): Promise<boolean> {
-        return bcrypt.compare(crypto.createHash("sha512").update(password).digest("hex"), hash);
+    compare(password: string, hash: string): boolean {
+        return bcrypt.compareSync(crypto.createHash("sha512").update(password).digest("hex"), hash);
     },
 };
 
@@ -36,14 +36,12 @@ const BAD_PASSWORD_INDEX = fs.readFileSync("./src/services/bad_passwords.txt", "
 /* eslint-disable quotes, no-useless-escape */
 const SPECIAL_CHARACTERS = ` !"#$%&'()*+,-./:;<=>?@[\]^_` + "`{|}~";
 
-export async function validate(password: string): Promise<void> {
-    const [min, bad, special, numbers, mixed] = await Promise.all([
-        settings.password.minLength.get(),
-        settings.password.badCheck.get(),
-        settings.password.requireSpecial.get(),
-        settings.password.requireNumber.get(),
-        settings.password.requireMixedCase.get(),
-    ]);
+export function validate(password: string): void {
+    const min = settings.password.minLength.get();
+    const bad = settings.password.badCheck.get();
+    const special = settings.password.requireSpecial.get();
+    const numbers = settings.password.requireNumber.get();
+    const mixed = settings.password.requireMixedCase.get();
 
     if (password.length < min) {
         throw new fail.Failure(`Passwords must be at least ${min} characters long`);

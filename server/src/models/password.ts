@@ -25,17 +25,16 @@ interface IPasswordFields {
 }
 
 export class Password {
-    public static async create(username: string, password: string, createdBy: User,
-        sessionID: string): Promise<Password> {
+    public static create(username: string, password: string, createdBy: User, sessionID: string): Password {
 
-        const expireDays = await settings.password.expirationDays.get();
+        const expireDays = settings.password.expirationDays.get();
         let expiration: undefined | Date;
         if (expireDays !== 0) {
             expiration = addDays(new Date(), expireDays);
         }
 
-        await pwdSvc.validate(password);
-        const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(password);
+        pwdSvc.validate(password);
+        const hash = pwdSvc.versions[pwdSvc.currentVersion].hash(password);
 
         return new Password({
             username,
@@ -49,8 +48,8 @@ export class Password {
         });
     }
 
-    public static async get(username: string): Promise<Password> {
-        const res = await sql.get({ $username: username });
+    public static get(username: string): Password {
+        const res = sql.get({ username });
         if (res.length === 0) {
             throw new fail.NotFound(`No password found for user ${username}`);
         }
@@ -69,13 +68,13 @@ export class Password {
         });
     }
 
-    public static async login(username: string, password: string, rememberMe: boolean, ipAddress: string,
-        userAgent?: string): Promise<Session> {
+    public static login(username: string, password: string, rememberMe: boolean, ipAddress: string,
+        userAgent?: string): Session {
         const errLogin = new fail.Failure("Invalid user or password");
 
         // TODO: Ratelimit password attempts
-        return await sysdb.beginTran<Session>(async (): Promise<Session> => {
-            const res = await sql.login({ $username: username });
+        return sysdb.beginTran<Session>((): Session => {
+            const res = sql.login({ username });
             if (res.length === 0) {
                 throw errLogin;
             }
@@ -99,11 +98,11 @@ export class Password {
                 throw new fail.Failure("Your password has expired, you must pick a new password");
             }
 
-            if (!await pwd.compare(password)) {
+            if (!pwd.compare(password)) {
                 throw errLogin;
             }
 
-            return await Session.create(user, rememberMe, ipAddress, userAgent);
+            return Session.create(user, rememberMe, ipAddress, userAgent);
         });
     }
 
@@ -130,22 +129,22 @@ export class Password {
         this.updatedDate = args.updatedDate || args.createdDate;
     }
 
-    public async insert(): Promise<void> {
+    public insert(): void {
         if (this.sessionID == undefined || this.createdBy == undefined) {
             throw new Error("Cannot insert password due to missing fields");
         }
 
-        await sql.insert({
-            $username: this.username,
-            $version: this.version,
-            $hash: this.hash,
-            $hash_version: this.hashVersion,
-            $expiration: this.expiration,
-            $session_id: this.sessionID,
-            $updated_date: this.updatedDate || new Date(),
-            $updated_by: this.updatedBy || this.createdBy,
-            $created_date: this.createdDate || new Date(),
-            $created_by: this.createdBy,
+        sql.insert({
+            username: this.username,
+            version: this.version,
+            hash: this.hash,
+            hash_version: this.hashVersion,
+            expiration: this.expiration,
+            session_id: this.sessionID,
+            updated_date: this.updatedDate || new Date(),
+            updated_by: this.updatedBy || this.createdBy,
+            created_date: this.createdDate || new Date(),
+            created_by: this.createdBy,
         });
     }
 
@@ -156,7 +155,7 @@ export class Password {
         return false;
     }
 
-    public async compare(otherPassword: string): Promise<boolean> {
+    public compare(otherPassword: string): boolean {
         const pwdVer = pwdSvc.versions[this.hashVersion];
 
         if (!pwdVer) {
@@ -170,17 +169,17 @@ export class Password {
         * Already logged in user is changing their own password
         * Admin is changing an other user's password
      */
-    public async update(password: string, session: Session, mustChange: boolean): Promise<void> {
-        await pwdSvc.validate(password);
+    public update(password: string, session: Session, mustChange: boolean): void {
+        pwdSvc.validate(password);
 
-        if (await this.compare(password)) {
+        if (this.compare(password)) {
             throw new fail.Failure("Your new password cannot match your previous password");
         }
 
-        const reuse = await settings.password.reuseCheck.get();
+        const reuse = settings.password.reuseCheck.get();
         if (reuse > 0) {
             // test each previous password using that passwords hash version
-            const res = await sql.history.get({ $username: this.username, $limit: reuse });
+            const res = sql.history.get({ username: this.username, limit: reuse });
             for (const row of res) {
                 const passHistory = new Password({
                     username: row.username,
@@ -189,49 +188,51 @@ export class Password {
                     hashVersion: row.hash_version,
                 });
 
-                if (await passHistory.compare(password)) {
+                if (passHistory.compare(password)) {
                     throw new fail.Failure(`Your new password cannot match your previous ${reuse + 1} passwords`);
                 }
             }
         }
 
-        const hash = await pwdSvc.versions[pwdSvc.currentVersion].hash(password);
+        const hash = pwdSvc.versions[pwdSvc.currentVersion].hash(password);
         let expires: undefined | Date;
         if (mustChange) {
             expires = addDays(new Date(), 1); // if admin set password, the user has 1 day to change it
         } else {
-            const expireDays = await settings.password.expirationDays.get();
+            const expireDays = settings.password.expirationDays.get();
             if (expireDays !== 0) {
                 expires = addDays(new Date(), expireDays);
             }
         }
 
-        if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {
-            throw new Error("Cannot insert password history due to missing fields");
-        }
+        sysdb.beginTran(() => {
+            if (!this.sessionID || !this.updatedDate || !this.updatedBy || !this.createdDate || !this.createdBy) {
+                throw new Error("Cannot insert password history due to missing fields");
+            }
 
-        await sql.history.insert({
-            $username: this.username,
-            $version: this.version,
-            $hash: this.hash,
-            $hash_version: this.hashVersion,
-            $session_id: this.sessionID,
-            $created_date: this.updatedDate,
-            $created_by: this.updatedBy,
+            sql.history.insert({
+                username: this.username,
+                version: this.version,
+                hash: this.hash,
+                hash_version: this.hashVersion,
+                session_id: this.sessionID,
+                created_date: this.updatedDate,
+                created_by: this.updatedBy,
+            });
+
+            sql.update({
+                username: this.username,
+                version: this.version,
+                hash: hash,
+                hash_version: pwdSvc.currentVersion,
+                expiration: expires,
+                session_id: session.id,
+                updated_date: new Date(),
+                updated_by: session.username,
+            });
+
+            Session.logoutAll(this.username, session.id);
         });
-
-        await sql.update({
-            $username: this.username,
-            $version: this.version,
-            $hash: hash,
-            $hash_version: pwdSvc.currentVersion,
-            $expiration: expires,
-            $session_id: session.id,
-            $updated_date: new Date(),
-            $updated_by: session.username,
-        });
-
-        await Session.logoutAll(this.username, session.id);
     }
 }
 

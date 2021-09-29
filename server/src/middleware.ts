@@ -29,7 +29,7 @@ export function session() {
     // usually only the security service will be using it's own getSession func to get the session directly
     // from the database. Everyone else will use the default get session which will make a call to the security
     // service's REST API
-    return async (req: express.Request, _: express.Response, next: express.NextFunction): Promise<void> => {
+    return (req: express.Request, _: express.Response, next: express.NextFunction): void => {
         try {
             let token = "";
 
@@ -39,7 +39,7 @@ export function session() {
             }
 
             if (token) {
-                const s = await Session.get(token);
+                const s = Session.get(token);
                 if (s) {
                     req.session = s;
                 }

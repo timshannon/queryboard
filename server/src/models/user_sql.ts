@@ -5,15 +5,15 @@ import { sysdb } from "../data/data";
 export default {
     user: {
         insert: sysdb.prepareUpdate<{
-            $username: string,
-            $admin: boolean,
-            $start_date: Date,
-            $end_date?: Date,
-            $version: number,
-            $updated_date: Date,
-            $created_date: Date,
-            $created_by: string,
-            $updated_by: string,
+            username: string,
+            admin: boolean,
+            start_date: Date,
+            end_date?: Date,
+            version: number,
+            updated_date: Date,
+            created_date: Date,
+            created_by: string,
+            updated_by: string,
         }>(`
             insert into users (
                 username,
@@ -38,7 +38,7 @@ export default {
             )
         `),
         get: sysdb.prepareQuery<{
-            $username: string,
+            username: string,
         }, {
             username: string,
             admin: boolean,
@@ -63,13 +63,13 @@ export default {
             where username = $username
         `),
         update: sysdb.prepareUpdate<{
-            $username: string,
-            $version: number,
-            $admin: boolean,
-            $start_date: Date,
-            $end_date?: Date,
-            $updated_date: Date,
-            $updated_by: string,
+            username: string,
+            version: number,
+            admin: boolean,
+            start_date: Date,
+            end_date?: Date,
+            updated_date: Date,
+            updated_by: string,
         }>(`
             update  users
             set     admin = $admin,   

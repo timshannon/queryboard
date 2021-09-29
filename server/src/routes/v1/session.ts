@@ -6,23 +6,22 @@ import { Session } from "../../models/session";
 import express from "express";
 import * as fail from "../../fail";
 
-export async function passwordLogin(req: express.Request, res: express.Response): Promise<void> {
+export function passwordLogin(req: express.Request, res: express.Response): void {
     const rememberMe = req.body.rememberMe || false;
 
-    const session = await Password.login(req.body.username, req.body.password, rememberMe, req.ip, req.get("User-Agent"));
+    const session = Password.login(req.body.username, req.body.password, rememberMe, req.ip, req.get("User-Agent"));
     res.status(201).send(session);
 }
 
-export async function get(req: express.Request, res: express.Response): Promise<void> {
+export function get(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.NotFound("No valid session found");
     }
 
     res.send(req.session);
-    await Promise.resolve();
 }
 
-export async function logout(req: express.Request, res: express.Response): Promise<void> {
+export function logout(req: express.Request, res: express.Response): void {
     if (!req.session) {
         throw new fail.Unauthorized();
     }
@@ -32,10 +31,10 @@ export async function logout(req: express.Request, res: express.Response): Promi
         sessionID = req.session.id;
     }
 
-    const s = await Session.get(sessionID);
+    const s = Session.get(sessionID);
 
     if (s) {
-        await s.logout();
+        s.logout();
     }
     res.send();
 }

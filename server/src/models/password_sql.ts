@@ -4,7 +4,7 @@ import { sysdb } from "../data/data";
 
 export default {
     login: sysdb.prepareQuery<{
-        $username: string,
+        username: string,
     }, {
         username: string,
         admin: boolean,
@@ -29,7 +29,7 @@ export default {
         where   u.username = $username
     `),
     get: sysdb.prepareQuery<{
-        $username: string,
+        username: string,
     }, {
         username: string,
         hash: string,
@@ -52,16 +52,16 @@ export default {
         where   username = $username
     `),
     insert: sysdb.prepareUpdate<{
-        $username: string,
-        $version: number,
-        $hash: string,
-        $hash_version: number,
-        $expiration?: Date,
-        $session_id: string,
-        $updated_date: Date,
-        $updated_by: string,
-        $created_date: Date,
-        $created_by: string,
+        username: string,
+        version: number,
+        hash: string,
+        hash_version: number,
+        expiration?: Date,
+        session_id: string,
+        updated_date: Date,
+        updated_by: string,
+        created_date: Date,
+        created_by: string,
     }>(`
         insert into passwords (
             username,
@@ -88,14 +88,14 @@ export default {
         )
     `),
     update: sysdb.prepareUpdate<{
-        $username: string,
-        $version: number,
-        $hash: string,
-        $hash_version: number,
-        $expiration?: Date,
-        $session_id: string,
-        $updated_date: Date,
-        $updated_by: string,
+        username: string,
+        version: number,
+        hash: string,
+        hash_version: number,
+        expiration?: Date,
+        session_id: string,
+        updated_date: Date,
+        updated_by: string,
     }>(`
         update  passwords
         set     hash = $hash,
@@ -110,8 +110,8 @@ export default {
     `),
     history: {
         get: sysdb.prepareQuery<{
-            $username: string,
-            $limit: number,
+            username: string,
+            limit: number,
         }, {
             username: string,
             version: number,
@@ -128,13 +128,13 @@ export default {
             LIMIT $limit
         `),
         insert: sysdb.prepareUpdate<{
-            $username: string,
-            $version: number,
-            $hash: string,
-            $hash_version: number,
-            $session_id: string,
-            $created_date: Date,
-            $created_by: string,
+            username: string,
+            version: number,
+            hash: string,
+            hash_version: number,
+            session_id: string,
+            created_date: Date,
+            created_by: string,
         }>(`
             insert into password_history (
                 username,

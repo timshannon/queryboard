@@ -10,23 +10,14 @@ import userSQL from "../src/models/user_sql";
 
 import request from "supertest";
 
-beforeAll(async () => {
-    const p = new Promise<void>((resolve) => {
-        app.on("ready", () => {
-            resolve();
-        });
-    });
-    await p;
-});
-
 describe("GET /random-url", () => {
     it("should return 404", () => {
         return request(app).get("/blah")
             .expect(404);
     });
 
-    it("should ensure schema", async () => {
-        const res = await sysdb.query(`
+    it("should ensure schema", () => {
+        const res = sysdb.query(`
             SELECT name 
             FROM sqlite_master
             WHERE type='table'
@@ -35,9 +26,9 @@ describe("GET /random-url", () => {
         expect(res.length).toBe(1);
     });
 
-    it("should ensure create an admin if no users exist", async () => {
-        const res = await userSQL.user.count();
-        const usr = await userSQL.user.get({ $username: "admin" });
+    it("should ensure create an admin if no users exist", () => {
+        const res = userSQL.user.count();
+        const usr = userSQL.user.get({ username: "admin" });
 
         expect(res.length).toBe(1);
         expect(res[0].count).toBe(1);
