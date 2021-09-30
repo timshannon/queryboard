@@ -237,298 +237,211 @@ describe("POST /v1/users/", () => {
 
     });
 
-    //     describe("User validation", () => {
-    //         it("should not allow a new user to have the same email address as an existing user", async () => {
-    //             nock(config.common.services.portal).post("/v1/notifications").reply(201);
-    //             const email = "same.email@test.com";
-    //             const regID = await mockRegistration(email);
-    //             const secondRegID = await mockRegistration(email);
+    describe("User validation", () => {
+        it("should not allow a new user to have the same username as an existing user", async () => {
+            const username = "sameusername";
 
-    //             let res = await request(app).post(`/v1/users/password/${regID}`).
-    //                 send({ password: "Correcth0rsebattery$taple" });
+            let res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
+                    username: username,
+                    password: "Correcth0rsebattery$taple",
+                });
 
-    //             expect(res.status).toBe(201);
+            expect(res.status).toBe(201);
 
-    //             res = await request(app).post(`/v1/users/password/${secondRegID}`).
-    //                 send({ password: "Correcth0rsebattery$taple" });
-
-    //             expect(res.status).toBe(400);
-    //             expect(res.body).toHaveProperty("message");
-    //             expect(res.body.message).toBe(`A User with the email ${email} already exists`);
-    //         });
-
-    //         it.each([
-    //             "badatbademail.com",
-    //             "bad bademail.com",
-    //             "bad.bademail.com",
-    //             "@.com",
-    //             "test @test.com",
-    //         ])("should not allow the invalid email address %s", async (email: string) => {
-    //             const regID = await mockRegistration(email);
-
-    //             const res = await request(app).post(`/v1/users/password/${regID}`).
-    //                 send({ password: "Correcth0rsebattery$taple" });
-
-    //             expect(res.status).toBe(400);
-    //             expect(res.body).toHaveProperty("message");
-    //             expect(res.body.message).toBe("Invalid email address");
-    //         });
-
-    //         it("should send a notification when a registration is claimed", async () => {
-    //             const fn = jest.fn();
-    //             nock(config.common.services.portal).post("/v1/notifications").reply(201, () => {
-    //                 fn();
-    //             });
-    //             await Promise.all([
-    //                 setSetting("password.requireNumber", true),
-    //                 setSetting("password.badCheck", true),
-    //                 setSetting("password.minLength", 10),
-    //                 setSetting("password.requireSpecial", true),
-    //                 setSetting("password.requireMixedCase", true),
-    //             ]);
-
-    //             const regID = await mockRegistration("newpasswordpass@test.com");
-
-    //             const res = await request(app).post(`/v1/users/password/${regID}`).
-    //                 send({ password: "Correcth0rsebattery$taple" });
-
-    //             expect(res.status).toBe(201);
-    //             expect(fn).toHaveBeenCalled();
-    //         });
-
-    //     });
-    // });
-
-    // describe("GET /v1/users/:id", () => {
-    //     it("should not get an invalid user", async () => {
-    //         const res = await request(app).get(`/v1/users/${uuid.generate()}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(404);
-    //     });
-
-    //     it("should require a session", async () => {
-    //         const res = await request(app).get(`/v1/users/${otherUser.id}`);
-    //         expect(res.status).toBe(401);
-    //     });
-
-    //     it("should retrieve a user", async () => {
-    //         const res = await request(app).get(`/v1/users/${otherUser.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("id");
-    //         expect(res.body.id).toBe(otherUser.id);
-    //         expect(res.body).toHaveProperty("email");
-    //         expect(res.body.email).toBe(otherUser.email);
-    //         expect(res.body).not.toHaveProperty("password");
-    //         expect(res.body).toHaveProperty("createdBy");
-    //     });
-
-    //     it("should retrieve self user if no ID is specified", async () => {
-    //         const res = await request(app).get(`/v1/users`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("id");
-    //         expect(res.body.id).toBe(admin.id);
-    //         expect(res.body).toHaveProperty("email");
-    //         expect(res.body.email).toBe(admin.email);
-    //         expect(res.body).not.toHaveProperty("password");
-    //     });
-
-    //     it("should retrieve a user by email address", async () => {
-    //         const res = await request(app).get(`/v1/users?email=${otherUser.email}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("id");
-    //         expect(res.body.id).toBe(otherUser.id);
-    //         expect(res.body).toHaveProperty("email");
-    //         expect(res.body.email).toBe(otherUser.email);
-    //         expect(res.body).not.toHaveProperty("password");
-    //     });
-
-    //     it("should retrieve a search for a user by name", async () => {
-    //         const res = await request(app).get(`/v1/users?search=${otherUser.fullName}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("data");
-    //         expect(res.body.data).toHaveLength(1);
-    //         expect(res.body.data[0]).toHaveProperty("id");
-    //         expect(res.body.data[0].id).toBe(otherUser.id);
-    //         expect(res.body.data[0]).toHaveProperty("email");
-    //         expect(res.body.data[0].email).toBe(otherUser.email);
-    //         expect(res.body.data[0]).not.toHaveProperty("password");
-    //     });
-
-    //     it("should retrieve a search for a user by email", async () => {
-    //         const res = await request(app).get(`/v1/users?search=${otherUser.email}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("data");
-    //         expect(res.body.data).toHaveLength(1);
-    //         expect(res.body.data[0]).toHaveProperty("id");
-    //         expect(res.body.data[0].id).toBe(otherUser.id);
-    //         expect(res.body.data[0]).toHaveProperty("email");
-    //         expect(res.body.data[0].email).toBe(otherUser.email);
-    //         expect(res.body.data[0]).not.toHaveProperty("password");
-    //     });
-
-    //     it("should retrieve a search for a user by case insensitive partial name or email", async () => {
-    //         const res = await request(app).get(`/v1/users?search=john`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("total");
-    //         expect(res.body.total).toBe(2);
-    //     });
-    // });
+            res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
+                    username: username,
+                    password: "Correcth0rsebattery$taple",
+                });
 
 
-    // describe("PUT /v1/users/:id", () => {
-    //     const tester = { id: null, email: "test.updates@test.com", password: "Correcth0rsebattery$taple" };
-    //     beforeAll(async () => {
-    //         await bulk(undefined, undefined, [tester]);
-    //     });
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty("message");
+            expect(res.body.message).toBe(`A User with the username ${username} already exists`);
+        });
 
-    //     it("should require a session", async () => {
-    //         const res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .send({ version: 1 });
-    //         expect(res.status).toBe(401);
-    //     });
+        it.each([
+            "badusername@test.com",
+            "username with spaces",
+            "username%bad",
+        ])("should not allow the invalid usernames %s", async (username: string) => {
 
-    //     it("should require the field version", async () => {
-    //         const res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(400);
-    //         expect(res.body).toHaveProperty("message");
-    //         expect(res.body.message).toBe("The field 'version' is required");
-    //     });
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
+                    username: username,
+                    password: "Correcth0rsebattery$taple",
+                });
 
-    //     it("should not allow a long name", async () => {
-    //         const name = "long name long name long name long name long name long name long name long name long name long" +
-    //             "name long name long name long name long name long name long name long name long name long name " +
-    //             "name long name long name long name long name long name long name long name long name long name " +
-    //             "name long name long name long name long name long name long name long name long name long name " +
-    //             "name long name long name long name long name long name long name long name long name long name " +
-    //             "name long name long name long name long name long name long name long name long name long name ";
-    //         const body: any = {
-    //             version: 0,
-    //         };
-    //         body.fullName = name;
-    //         const res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf)
-    //             .send(body);
-    //         expect(res.status).toBe(400);
-    //         expect(res.body).toHaveProperty("message");
-    //         expect(res.body.message).toContain("is longer than 500 characters");
-    //     });
 
-    //     it("should not update if version is incorrect", async () => {
-    //         const res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf)
-    //             .send({
-    //                 version: 32,
-    //                 fullName: "New Name",
-    //             });
-    //         expect(res.status).toBe(409);
-    //     });
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty("message");
+            expect(res.body.message).toBe("Username's can only contain letters, numbers and '-', '.' or '_'");
+        });
 
-    //     it("should update fullName", async () => {
-    //         let res = await request(app).get(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("version");
+        it.each([
+            "username",
+            "user.name",
+            "user_name",
+            "user-name",
+            ".username",
+            "USERNAME",
+            ".._..-..",
+        ])("should allow the valid usernames %s", async (username: string) => {
 
-    //         const version = res.body.version;
-    //         const newName = "New Name";
-    //         const body: any = {
-    //             version,
-    //         };
-    //         body.fullName = newName;
-    //         res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf)
-    //             .send(body);
-    //         expect(res.status).toBe(200);
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
+                    username: username,
+                    password: "Correcth0rsebattery$taple",
+                });
 
-    //         res = await request(app).get(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("version");
-    //         expect(res.body.version).toBe(version + 1);
-    //         expect(res.body).toHaveProperty("fullName");
-    //         expect(res.body.fullName).toBe(newName);
-    //     });
+            expect(res.status).toBe(201);
+        });
 
-    //     it.each(["startDate", "endDate"])("should update %s", async (field) => {
-    //         let res = await request(app).get(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("version");
-
-    //         const version = res.body.version;
-    //         const newDate = new Date();
-    //         const body: any = {
-    //             version,
-    //         };
-    //         body[field] = newDate;
-    //         res = await request(app).put(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf)
-    //             .send(body);
-    //         expect(res.status).toBe(200);
-
-    //         res = await request(app).get(`/v1/users/${tester.id}`)
-    //             .set("Authorization", `Bearer ${admin.token}`)
-    //             .set("X-CSRFToken", admin.csrf);
-    //         expect(res.status).toBe(200);
-    //         expect(res.body).toHaveProperty("version");
-    //         expect(res.body.version).toBe(version + 1);
-    //         expect(res.body).toHaveProperty(field);
-    //         expect(res.body[field]).toBe(newDate.toISOString());
-    //     });
-
-});
-
-describe("PUT /v1/password", () => {
-    it("should require a the field password", async () => {
-        const res = await request(app).put("/v1/password");
-        expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty("message");
-        expect(res.body.message).toBe("The field 'password' is required");
-    });
-
-    it.each<[string, number]>([
-        ["badpassword", 400],
-        ["badpasswordthatislongenough", 400],
-        ["P@ssw0rd", 400],
-        ["qwerty123456789", 400],
-        ["This1sAg00dP@ssw0rd", 200],
-    ])("should validate the password %s with a status %d", async (password, expected) => {
-        await Promise.all([
-            setSetting("password.requireNumber", true),
-            setSetting("password.badCheck", true),
-            setSetting("password.minLength", 10),
-            setSetting("password.requireSpecial", true),
-            setSetting("password.requireMixedCase", true),
-        ]);
-
-        const res = await request(app).put("/v1/password")
-            .send({
-                password,
+        describe("GET /v1/users/:username", () => {
+            it("should not get an invalid user", async () => {
+                const res = await request(app).get("/v1/users/badusername")
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(404);
             });
 
-        expect(res.status).toBe(expected);
+            it("should require a session", async () => {
+                const res = await request(app).get(`/v1/users/${otherUser.username}`);
+                expect(res.status).toBe(401);
+            });
+
+            it("should retrieve a user", async () => {
+                const res = await request(app).get(`/v1/users/${otherUser.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveProperty("username");
+                expect(res.body.username).toBe(otherUser.username);
+                expect(res.body).not.toHaveProperty("password");
+                expect(res.body).toHaveProperty("createdBy");
+            });
+
+            it("should retrieve self user if no ID is specified", async () => {
+                const res = await request(app).get("/v1/users")
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveProperty("username");
+                expect(res.body.username).toBe(admin.username);
+                expect(res.body).not.toHaveProperty("password");
+            });
+        });
+
+
+        describe("PUT /v1/users/:username", () => {
+            const tester = { username: "test.updates", password: "Correcth0rsebattery$taple" };
+            beforeAll(async () => {
+                await request(app).post("/v1/users/")
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf)
+                    .send({
+                        username: tester.username,
+                        password: tester.password,
+                    });
+            });
+
+            it("should require a session", async () => {
+                const res = await request(app).put(`/v1/users/${tester.username}`)
+                    .send({ version: 1 });
+                expect(res.status).toBe(401);
+            });
+
+            it("should require the field version", async () => {
+                const res = await request(app).put(`/v1/users/${tester.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(400);
+                expect(res.body).toHaveProperty("message");
+                expect(res.body.message).toBe("The field 'version' is required");
+            });
+
+            it("should not update if version is incorrect", async () => {
+                const res = await request(app).put(`/v1/users/${tester.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf)
+                    .send({
+                        version: 32,
+                        endDate: new Date(),
+                    });
+                expect(res.status).toBe(409);
+            });
+
+            it.each(["startDate", "endDate"])("should update %s", async (field) => {
+                let res = await request(app).get(`/v1/users/${tester.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveProperty("version");
+
+                const version: number = res.body.version;
+                const newDate = new Date();
+                const body: Record<string, string | number | Date> = {
+                    version,
+                };
+                body[field] = newDate;
+                res = await request(app).put(`/v1/users/${tester.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf)
+                    .send(body);
+                expect(res.status).toBe(200);
+
+                res = await request(app).get(`/v1/users/${tester.username}`)
+                    .set("Authorization", `Bearer ${admin.token}`)
+                    .set("X-CSRFToken", admin.csrf);
+                expect(res.status).toBe(200);
+                expect(res.body).toHaveProperty("version");
+                expect(res.body.version).toBe(version + 1);
+                expect(res.body).toHaveProperty(field);
+                expect(res.body[field]).toBe(newDate.toISOString());
+            });
+        });
+
+    });
+
+    describe("PUT /v1/password", () => {
+        it("should require a the field password", async () => {
+            const res = await request(app).put("/v1/password");
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty("message");
+            expect(res.body.message).toBe("The field 'password' is required");
+        });
+
+        it.each<[string, number]>([
+            ["badpassword", 400],
+            ["badpasswordthatislongenough", 400],
+            ["P@ssw0rd", 400],
+            ["qwerty123456789", 400],
+            ["This1sAg00dP@ssw0rd", 200],
+        ])("should validate the password %s with a status %d", async (password, expected) => {
+            await Promise.all([
+                setSetting("password.requireNumber", true),
+                setSetting("password.badCheck", true),
+                setSetting("password.minLength", 10),
+                setSetting("password.requireSpecial", true),
+                setSetting("password.requireMixedCase", true),
+            ]);
+
+            const res = await request(app).put("/v1/password")
+                .send({
+                    password,
+                });
+
+            expect(res.status).toBe(expected);
+        });
     });
 });
 

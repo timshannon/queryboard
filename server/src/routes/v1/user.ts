@@ -25,7 +25,7 @@ export function get(req: express.Request, res: express.Response): void {
     let username = req.params.username;
 
     if (!username) {
-        username = req.session.username;
+        username = req.session.user().username;
     }
 
     const user = User.get(req.session, username);

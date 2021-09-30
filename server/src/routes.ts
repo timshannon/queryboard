@@ -42,6 +42,8 @@ function users(app: express.Express) {
         body("password").isRequired().isString().description("temp password for the new user"));
 
     // GET
+    route(app).get("/v1/users", user.get);
+
     route(app).get("/v1/users/:username", user.get,
         param("username").isRequired().isString().description("username"));
 

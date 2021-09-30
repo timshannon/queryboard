@@ -12,7 +12,7 @@ import config from "../config";
 import { isAfter, isBefore, addSeconds, addDays } from "date-fns";
 
 const maxNameLength = 500;
-const testUsername = /^[a-zA-Z0-9-_]*$/i;
+const testUsername = /^[a-zA-Z0-9-_.]*$/i;
 
 interface IUserFields {
     username: string;
@@ -261,7 +261,7 @@ export class User {
         }
 
         if (!testUsername.test(this.username)) {
-            throw new fail.Failure("username's can only contain letters, numbers and '-' or '_'");
+            throw new fail.Failure("Username's can only contain letters, numbers and '-', '.' or '_'");
         }
     }
 }
