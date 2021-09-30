@@ -91,13 +91,14 @@ describe("POST /v1/users/", () => {
                 setDefault("password.requireSpecial"),
                 setDefault("password.requireNumber"),
                 setDefault("password.requireMixedCase"),
-                setDefault("auth.password"),
             ]);
         });
 
-        it.only("should require the password field", async () => {
-            const res = await request(app).post("/v1/users/").
-                send({
+        it("should require the password field", async () => {
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "blah",
                 });
             expect(res.status).toBe(400);
@@ -107,8 +108,10 @@ describe("POST /v1/users/", () => {
 
 
         it("should require the username field", async () => {
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     password: "newPassword!",
                 });
             expect(res.status).toBe(400);
@@ -119,8 +122,10 @@ describe("POST /v1/users/", () => {
         it("should not allow a bad password", async () => {
             await setSetting("password.badCheck", true);
 
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "qwerty123456789",
                 });
@@ -132,8 +137,10 @@ describe("POST /v1/users/", () => {
 
         it("should enforce a minimum password length", async () => {
             await setSetting("password.minLength", 10);
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "$ffda#1",
                 });
@@ -145,8 +152,10 @@ describe("POST /v1/users/", () => {
 
         it("should require a special character", async () => {
             await setSetting("password.requireSpecial", true);
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "correcthorsebatterystaple",
                 });
@@ -159,8 +168,10 @@ describe("POST /v1/users/", () => {
         it("should require a number", async () => {
             await setSetting("password.requireNumber", true);
 
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "correcthorsebatterystaple",
                 });
@@ -172,8 +183,10 @@ describe("POST /v1/users/", () => {
 
         it("should require mixed case", async () => {
             await setSetting("password.requireMixedCase", true);
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "correcthorsebatterystaple",
                 });
@@ -192,8 +205,10 @@ describe("POST /v1/users/", () => {
                 setSetting("password.requireMixedCase", true),
             ]);
 
-            const res = await request(app).post("/v1/users/").
-                send({
+            const res = await request(app).post("/v1/users/")
+                .set("Authorization", `Bearer ${admin.token}`)
+                .set("X-CSRFToken", admin.csrf)
+                .send({
                     username: "newUser",
                     password: "Correcth0rsebattery$taple",
                 });
@@ -201,7 +216,24 @@ describe("POST /v1/users/", () => {
             expect(res.status).toBe(201);
         });
 
-        //TODO: it should require an admin
+        it("should require an admin to create a user", async () => {
+            await Promise.all([
+                setSetting("password.requireNumber", true),
+                setSetting("password.badCheck", true),
+                setSetting("password.minLength", 10),
+                setSetting("password.requireSpecial", true),
+                setSetting("password.requireMixedCase", true),
+            ]);
+
+            const res = await request(app).post("/v1/users/")
+                .send({
+                    username: "newUser",
+                    password: "Correcth0rsebattery$taple",
+                });
+
+            expect(res.status).toBe(401);
+        });
+
 
     });
 

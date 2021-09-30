@@ -31,7 +31,6 @@ beforeAll(async () => {
         .set("Authorization", `Bearer ${admin.token}`);
 
     admin.csrf = res.get("X-CSRFToken");
-
 });
 
 
