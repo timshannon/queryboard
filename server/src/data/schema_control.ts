@@ -10,8 +10,8 @@ const sql = {
         CREATE TABLE qb_schema_versions (
             version INT NOT NULL,
             script TEXT NOT NULL,
-            locked INT NOT NULL,
-            run_date REAL NOT NULL,
+            locked BOOLEAN NOT NULL,
+            run_date DATETIME NOT NULL,
             PRIMARY KEY(version)
         )
     `,
