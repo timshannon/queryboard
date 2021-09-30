@@ -14,13 +14,17 @@ const SYSTEMDBNAME = "system.db";
 
 type changeResult = { lastID: number | BigInt, changes: number };
 
-type SqliteType = {
-    [key: string]: number | string | bigint | Buffer | null;
+type SQLiteType = number | string | bigint | Buffer | null;
+
+type SQLiteRecord = {
+    [key: string]: SQLiteType;
 };
 
 // addss support for boolean and Date
-type SqlType = {
-    [key: string]: number | string | bigint | Buffer | null | boolean | Date;
+type QBSQLType = number | string | bigint | Buffer | null | boolean | Date;
+
+type QBSQLRecord = {
+    [key: string]: QBSQLType;
 };
 
 export class Connection {
@@ -40,8 +44,8 @@ export class Connection {
         }
     }
 
-    private prepParameters(params: SqlType): SqliteType {
-        const res: SqliteType = {};
+    private prepParameters(params: QBSQLRecord): SQLiteRecord {
+        const res: SQLiteRecord = {};
 
         for (const key in params) {
             if (typeof params[key] == "boolean") {
@@ -56,38 +60,64 @@ export class Connection {
         return res;
     }
 
-    private prepRecord(columns: sqlite.ColumnDefinition[], record: SqliteType): SqlType {
-        const res: SqlType = {};
+    private prepRecord(columns: sqlite.ColumnDefinition[], record: SQLiteType[]): QBSQLRecord {
+        const res: QBSQLRecord = {};
 
-        for (const column of columns) {
-
+        for (let i = 0; i < columns.length; i++) {
+            if (record[i] == undefined || record[i] == null) {
+                res[columns[i].name] = null;
+            } else if (columns[i].type == "DATETIME") {
+                if (typeof record[i] == "string") {
+                    res[columns[i].name] = new Date(record[i] as string);
+                } else {
+                    throw new Error(`Unknown DATETIME value format for column ${columns[i].name}: ${record[i]}`);
+                }
+            } else if (columns[i].type == "BOOLEAN") {
+                res[columns[i].name] = record[i] ? true : false;
+            } else {
+                res[columns[i].name] = record[i];
+            }
         }
 
+        return res;
+    }
+
+    private prepResult(columns: sqlite.ColumnDefinition[], results: SQLiteType[][]): QBSQLRecord[] {
+        const res: QBSQLRecord[] = [];
+
+        for (const record of results) {
+            res.push(this.prepRecord(columns, record));
+        }
+        return res;
     }
 
     // query runs an adhoc query, all application queries should use prepared statements
-    public query<Results extends SqlType>(sql: string, params?: SqlType): Results[] {
+    public query<Results extends QBSQLRecord>(sql: string, params?: QBSQLRecord): Results[] {
         try {
-            let res;
             const stmt = this.cnn.prepare(sql);
             if (stmt.reader) {
+                let res;
+                stmt.raw(true);
                 if (params) {
                     res = stmt.all(this.prepParameters(params));
                 } else {
                     res = stmt.all();
                 }
-            } else {
-                if (params) {
-                    res = stmt.run(this.prepParameters(params));
-                } else {
-                    res = stmt.run();
-                }
+
+                return this.prepResult(stmt.columns(), res as SQLiteType[][]) as Results[];
             }
-            return res as Results[];
+
+            if (params) {
+                stmt.run(this.prepParameters(params));
+            } else {
+                stmt.run();
+            }
+            return [] as Results[];
+
         } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
     }
 
-    public prepareQuery<Params extends SqlType | void, Results extends SqlType>
+    public prepareQuery<Params extends QBSQLRecord | void, Results extends QBSQLRecord>
         (sql: string): (params: Params | void) => Results[] {
         try {
             const statement = this.cnn.prepare(sql);
@@ -95,13 +125,14 @@ export class Connection {
 
             return (params: Params | void): Results[] => {
                 try {
-                    return statement.all(this.prepParameters(params || {})) as Results[];
+                    const res = statement.all(this.prepParameters(params || {}));
+                    return this.prepResult(statement.columns(), res as SQLiteType[][]) as Results[];
                 } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
             };
         } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
     }
 
-    public prepareUpdate<Params extends SqlType>(sql: string): (params: Params) => changeResult {
+    public prepareUpdate<Params extends QBSQLRecord>(sql: string): (params: Params) => changeResult {
         try {
             const statement = this.cnn.prepare(sql);
             return (params: Params): changeResult => {
