@@ -16,31 +16,31 @@ describe("validations", () => {
         app = express();
     });
 
-    it.each([
+    it.only.each([
         [{ email: "" }, body("email").exists(), true],
-        [{ email: "" }, body("email").isRequired(), false],
-        [{ email: "" }, body("other").exists(), false],
-        [{}, body("email").isRequired(), false],
-        [{ test: false }, body("test").isRequired(), true],
-        [{ test: "   " }, body("test").isRequired(), false],
-        [{ test: uuid.generate() }, body("test").isUUID(), true],
-        [{ test: "1224234-234234" }, body("test").isUUID(), false],
-        [{ test: "1-1-2018" }, body("test").isDate(), true],
-        [{ test: "1-37-2018" }, body("test").isDate(), false],
-        [{ test: "blah" }, body("test").isDate(), false],
-        [{ test: "31-dec-9999" }, body("test").isDate(), true],
-        [{ test: "test", num: 1234 }, body("num").isInt(), true],
-        [{ test: "test", num: "" }, body("num").isInt(), true],
-        [{ url: "blah" }, body("url").isRequired().isURL(), false],
-        [{ url: "http://blah" }, body("url").isRequired().isURL(), true],
-        [{ url: "http://blah.com" }, body("url").isRequired().isURL(), true],
-        [{ num: "asdf" }, body("num").isInt(), false],
-        [{ num: "asdf" }, body("num").isFloat(), false],
-        [{ num: 1234.3 }, body("num").isInt(), true],
-        [{ num: "c1234.32" }, body("num").isFloat(), false],
-        [{ test: "test", num: "test" }, body("num").isInt(), false],
-        [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz"), false],
-        [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz", "test"), true],
+        // [{ email: "" }, body("email").isRequired(), false],
+        // [{ email: "" }, body("other").exists(), false],
+        // [{}, body("email").isRequired(), false],
+        // [{ test: false }, body("test").isRequired(), true],
+        // [{ test: "   " }, body("test").isRequired(), false],
+        // [{ test: uuid.generate() }, body("test").isUUID(), true],
+        // [{ test: "1224234-234234" }, body("test").isUUID(), false],
+        // [{ test: "1-1-2018" }, body("test").isDate(), true],
+        // [{ test: "1-37-2018" }, body("test").isDate(), false],
+        // [{ test: "blah" }, body("test").isDate(), false],
+        // [{ test: "31-dec-9999" }, body("test").isDate(), true],
+        // [{ test: "test", num: 1234 }, body("num").isInt(), true],
+        // [{ test: "test", num: "" }, body("num").isInt(), true],
+        // [{ url: "blah" }, body("url").isRequired().isURL(), false],
+        // [{ url: "http://blah" }, body("url").isRequired().isURL(), true],
+        // [{ url: "http://blah.com" }, body("url").isRequired().isURL(), true],
+        // [{ num: "asdf" }, body("num").isInt(), false],
+        // [{ num: "asdf" }, body("num").isFloat(), false],
+        // [{ num: 1234.3 }, body("num").isInt(), true],
+        // [{ num: "c1234.32" }, body("num").isFloat(), false],
+        // [{ test: "test", num: "test" }, body("num").isInt(), false],
+        // [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz"), false],
+        // [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz", "test"), true],
     ])("should validate body fields: %p:%p:%p", async (data, validation, valid) => {
         const path = "/test";
 
@@ -153,7 +153,7 @@ describe("validations", () => {
         expect(updated).toEqual(corrected);
     });
 
-    it.only("should validate multiple fields and types in a put route", async () => {
+    it("should validate multiple fields and types in a put route", async () => {
         let rq: express.Request | undefined;
 
         route(app, false).put("/v1/model/:id", (req: express.Request, res: express.Response) => {

@@ -34,43 +34,44 @@ class Route {
 
     constructor(public readonly app: express.Express, public readonly requireSession = true) {}
 
-    public get(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
+    public get(path: string, handler: express.Handler | PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
         this.app.get(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
-                .then(async () => {
-                    await handler(req, res, next);
-                }).catch(next);
+                .then(() => {
+                    return handler(req, res, next);
+                }).catch(err => next(err));
         });
     }
 
-    public put(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
+    public put(path: string, handler: express.Handler | PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
         this.app.put(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
-                .then(async () => {
-                    await handler(req, res, next);
-                }).catch(next);
+                .then(() => {
+                    return handler(req, res, next);
+                }).catch(err => next(err));
         });
     }
 
-    public post(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
+    public post(path: string, handler: express.Handler | PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
         this.app.post(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
+
             this.validate(req)
-                .then(async () => {
-                    await handler(req, res, next);
-                }).catch(next);
+                .then(() => {
+                    return handler(req, res, next);
+                }).catch(err => next(err));
         });
     }
 
-    public delete(path: string, handler: PromiseHandler | express.Handler, ...fields: IField[]) {
+    public delete(path: string, handler: express.Handler | PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
         this.app.delete(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
             this.validate(req)
-                .then(async () => {
-                    await handler(req, res, next);
-                }).catch(next);
+                .then(() => {
+                    return handler(req, res, next);
+                }).catch(err => next(err));
         });
     }
 
@@ -112,24 +113,29 @@ class Field {
     }
 
     public validate(req: express.Request): Promise<void> {
-        /* eslint @typescript-eslint/no-explicit-any: "off" */
-        let value: any;
-        if (this.type === fieldType.param) {
-            value = req.params;
-        } else if (this.type === fieldType.query) {
-            value = req.query;
-        } else if (this.type === fieldType.body) {
-            value = req.body;
-        }
+        return new Promise<void>((resolve, reject) => {
+            try {
+                /* eslint @typescript-eslint/no-explicit-any: "off" */
+                let value: any;
+                if (this.type === fieldType.param) {
+                    value = req.params;
+                } else if (this.type === fieldType.query) {
+                    value = req.query;
+                } else if (this.type === fieldType.body) {
+                    value = req.body;
+                }
 
-        for (const fn of this.validations) {
-            const update = fn(value[this.name], this.name);
-            if (update !== undefined) {
-                value[this.name] = update;
+                for (const fn of this.validations) {
+                    const update = fn(value[this.name], this.name);
+                    if (update !== undefined) {
+                        value[this.name] = update;
+                    }
+                }
+                resolve();
+            } catch (err) {
+                reject(err);
             }
-        }
-
-        return Promise.resolve();
+        });
     }
 
     public isFloat(): Field {

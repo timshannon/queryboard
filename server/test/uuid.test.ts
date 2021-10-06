@@ -17,7 +17,7 @@ describe("IDs", () => {
         "00000000-0000-0000-0000-000000000001",
         "10000000-0000-0000-0000-000000000000",
         "11111111-1111-1111-1111-111111111111",
-    ])("should not validate invalid ids", async (id: string) => {
+    ])("should not validate invalid ids", (id: string) => {
         expect(uuid.isValid(id)).toBe(false);
     });
 
@@ -32,7 +32,7 @@ describe("IDs", () => {
         "7077ec7f-8364-44db-9d89-1af0a5be7611",
         "9b459865-63fa-4bdd-be4a-6e2e162cb712",
         "0adbe34e-7ad2-49a5-9c1c-6f92f857ab2d",
-    ])("should validate valid ids", async (id: string) => {
+    ])("should validate valid ids", (id: string) => {
         expect(uuid.isValid(id)).toBe(true);
     });
 
