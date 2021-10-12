@@ -1,4 +1,5 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+process.env.DATADIR = ":memory:";
 import express, { Express } from "express";
 import request from "supertest";
 import { json } from "body-parser";
@@ -322,7 +323,10 @@ describe("validations", () => {
 
         const result = await request(app).post("/v1/model/")
             .attach("test1.png", "./test/test.png")
-            .attach("test2.png", "./test/test.png");
+            .attach("test2.png", "./test/test.png")
+            .attach("test3.png", "./test/test.png")
+            .attach("test4.png", "./test/test.png")
+            .attach("test5.png", "./test/test.png");
 
         expect(result.status).toBe(400);
         expect(result.body).toHaveProperty("message");

@@ -52,12 +52,12 @@ class Route {
                     return handler(req, res, next);
                 }).catch(err => next(err));
         });
+
     }
 
     public post(path: string, handler: express.Handler | PromiseHandler, ...fields: IField[]) {
         this.fields = fields;
         this.app.post(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
-
             this.validate(req)
                 .then(() => {
                     return handler(req, res, next);
