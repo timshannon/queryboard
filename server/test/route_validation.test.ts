@@ -1,6 +1,7 @@
 // Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 import express, { Express } from "express";
 import request from "supertest";
+import { json } from "body-parser";
 
 import * as fail from "../src/fail";
 import * as middleware from "../src/middleware";
@@ -14,33 +15,34 @@ let app: Express;
 describe("validations", () => {
     beforeEach(() => {
         app = express();
+        app.use(json());
     });
 
-    it.only.each([
+    it.each([
         [{ email: "" }, body("email").exists(), true],
-        // [{ email: "" }, body("email").isRequired(), false],
-        // [{ email: "" }, body("other").exists(), false],
-        // [{}, body("email").isRequired(), false],
-        // [{ test: false }, body("test").isRequired(), true],
-        // [{ test: "   " }, body("test").isRequired(), false],
-        // [{ test: uuid.generate() }, body("test").isUUID(), true],
-        // [{ test: "1224234-234234" }, body("test").isUUID(), false],
-        // [{ test: "1-1-2018" }, body("test").isDate(), true],
-        // [{ test: "1-37-2018" }, body("test").isDate(), false],
-        // [{ test: "blah" }, body("test").isDate(), false],
-        // [{ test: "31-dec-9999" }, body("test").isDate(), true],
-        // [{ test: "test", num: 1234 }, body("num").isInt(), true],
-        // [{ test: "test", num: "" }, body("num").isInt(), true],
-        // [{ url: "blah" }, body("url").isRequired().isURL(), false],
-        // [{ url: "http://blah" }, body("url").isRequired().isURL(), true],
-        // [{ url: "http://blah.com" }, body("url").isRequired().isURL(), true],
-        // [{ num: "asdf" }, body("num").isInt(), false],
-        // [{ num: "asdf" }, body("num").isFloat(), false],
-        // [{ num: 1234.3 }, body("num").isInt(), true],
-        // [{ num: "c1234.32" }, body("num").isFloat(), false],
-        // [{ test: "test", num: "test" }, body("num").isInt(), false],
-        // [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz"), false],
-        // [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz", "test"), true],
+        [{ email: "" }, body("email").isRequired(), false],
+        [{ email: "" }, body("other").exists(), false],
+        [{}, body("email").isRequired(), false],
+        [{ test: false }, body("test").isRequired(), true],
+        [{ test: "   " }, body("test").isRequired(), false],
+        [{ test: uuid.generate() }, body("test").isUUID(), true],
+        [{ test: "1224234-234234" }, body("test").isUUID(), false],
+        [{ test: "1-1-2018" }, body("test").isDate(), true],
+        [{ test: "1-37-2018" }, body("test").isDate(), false],
+        [{ test: "blah" }, body("test").isDate(), false],
+        [{ test: "31-dec-9999" }, body("test").isDate(), true],
+        [{ test: "test", num: 1234 }, body("num").isInt(), true],
+        [{ test: "test", num: "" }, body("num").isInt(), true],
+        [{ url: "blah" }, body("url").isRequired().isURL(), false],
+        [{ url: "http://blah" }, body("url").isRequired().isURL(), true],
+        [{ url: "http://blah.com" }, body("url").isRequired().isURL(), true],
+        [{ num: "asdf" }, body("num").isInt(), false],
+        [{ num: "asdf" }, body("num").isFloat(), false],
+        [{ num: 1234.3 }, body("num").isInt(), true],
+        [{ num: "c1234.32" }, body("num").isFloat(), false],
+        [{ test: "test", num: "test" }, body("num").isInt(), false],
+        [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz"), false],
+        [{ test: "test", num: "test" }, body("test").isOneOf("foo", "bar", "baz", "test"), true],
     ])("should validate body fields: %p:%p:%p", async (data, validation, valid) => {
         const path = "/test";
 
@@ -56,7 +58,6 @@ describe("validations", () => {
             expect(result.status).toBe(400);
         }
     });
-
     it.each<[string, boolean]>([
         ["https://google.com", true],
         ["/path/only", false],
