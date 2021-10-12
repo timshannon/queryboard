@@ -51,7 +51,7 @@ describe("POST /v1/sessions/password", () => {
         expect(res.body).toHaveProperty("id");
         expect(res.body).toHaveProperty("csrfToken");
         expect(res.body).toHaveProperty("expires");
-        expect(isBefore(new Date(res.body.expires), addDays(new Date(), 2))).toBeTruthy();
+        expect(isBefore(new Date(res.body.expires as string), addDays(new Date(), 2))).toBeTruthy();
     });
 
     it("it should have a longer expiration for 'rememberMe' sessions", async () => {
@@ -65,7 +65,7 @@ describe("POST /v1/sessions/password", () => {
         expect(res.body).toHaveProperty("id");
         expect(res.body).toHaveProperty("csrfToken");
         expect(res.body).toHaveProperty("expires");
-        expect(isAfter(new Date(res.body.expires), addDays(new Date(), 2))).toBeTruthy();
+        expect(isAfter(new Date(res.body.expires as string), addDays(new Date(), 2))).toBeTruthy();
     });
 
     describe("inactive users", () => {

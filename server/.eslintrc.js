@@ -26,7 +26,8 @@ module.exports = {
 		"no-var": "error",
 		"prefer-const": "error",
 		"@typescript-eslint/no-unsafe-assignment": "off",
-		"@typescript-eslint/no-unsafe-member-access": "off",
+		"@typescript-eslint/no-unsafe-member-access": "off", // makes working with express a pain
+		"@typescript-eslint/no-unsafe-argument": "off", // makes working with express a pain
 		"@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
 		"@typescript-eslint/restrict-template-expressions": "off",
     },

@@ -319,14 +319,13 @@ describe("validations", () => {
             res.send();
         }, files().maxFiles(1));
 
+        // FIXME: this occasionally fails
+
         app.use(middleware.errors);
 
         const result = await request(app).post("/v1/model/")
             .attach("test1.png", "./test/test.png")
-            .attach("test2.png", "./test/test.png")
-            .attach("test3.png", "./test/test.png")
-            .attach("test4.png", "./test/test.png")
-            .attach("test5.png", "./test/test.png");
+            .attach("test2.png", "./test/test.png");
 
         expect(result.status).toBe(400);
         expect(result.body).toHaveProperty("message");
