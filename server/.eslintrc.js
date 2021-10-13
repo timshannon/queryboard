@@ -20,7 +20,7 @@ module.exports = {
 		"plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
     "rules": {
-		"quotes": ["error", "double"],
+		"quotes": ["error", "double", "avoid-escape"],
 		"semi": ["error"],
 		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"no-var": "error",
@@ -31,13 +31,5 @@ module.exports = {
 		"@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
 		"@typescript-eslint/restrict-template-expressions": "off",
     },
-	"overrides": [
-    {
-      // enable the rule specifically for TypeScript files
-      "files": ["*.ts", "*.tsx"],
-      "rules": {
-        "@typescript-eslint/explicit-module-boundary-types": ["error"]
-      }
-    }
-  ]
+	"overrides": []
 };

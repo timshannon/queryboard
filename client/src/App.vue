@@ -1,18 +1,20 @@
 <template>
   <div cds-layout="vertical align:stretch">
-    <header cds-layout="p:md p@md:lg"><Toolbar /></header>
+    <header cds-layout="p:md p@md:lg">
+      <Toolbar />
+    </header>
     <div cds-layout="horizontal align:vertical-stretch wrap:none">
       <nav cds-layout="p:md p@md:lg">
         <Sidebar />
       </nav>
-      <cds-divider orientation="vertical"></cds-divider>
+      <cds-divider orientation="vertical" />
       <div cds-layout="vertical align:stretch">
         <div>
           <div cds-layout="vertical gap:md p:lg">
             <Editor />
           </div>
         </div>
-        <cds-divider></cds-divider>
+        <cds-divider />
         <footer cds-layout="p-y:md p-x:lg">footer</footer>
       </div>
     </div>
