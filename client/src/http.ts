@@ -139,8 +139,8 @@ export class Socket {
                 resolve(connection);
             };
 
-            connection.onerror = (event: Event): void => {
-                reject(event);
+            connection.onerror = (): void => {
+                reject(new Error(`Error connecting websocket to ${this.socketAddress()}`));
             };
 
         });

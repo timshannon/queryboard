@@ -437,13 +437,14 @@ describe("http Client", () => {
 describe("Socket", () => {
     const sessionID = "fasdfasdfsdf";
     const token = "123124sadfasdf";
+    const url = "http://localhost";
 
     beforeEach((done) => {
         mock.setup();
         localStorage.clear();
         sessionStorage.clear();
 
-        mock.get(`${testURL}/v1/sessions`, {
+        mock.get(url + "/v1/sessions", {
             body: JSON.stringify({}),
             headers: {
                 "x-csrftoken": "blah",
@@ -452,7 +453,7 @@ describe("Socket", () => {
             status: 201,
         });
 
-        mock.post(`${testURL}/v1/sessions/token`, {
+        mock.post(url + "/v1/sessions/token", {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token }),
             status: 201,
@@ -476,27 +477,27 @@ describe("Socket", () => {
         expect(socket.socketAddress()).toBe(result);
     });
 
-    it.only("should connect to a websocket", async () => {
-        // FIXME:
-        const url = "https://localhost";
+    it("should connect to a websocket", async () => {
         const path = "/v1/test";
 
         const client = new http.Client(url);
         client.setSession(sessionID);
 
         const socket = client.socket(path);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
 
         const fn = jest.fn();
         server.on("connection", fn);
 
-        await socket.connect();
-        expect(fn).toBeCalled();
-        server.stop();
+        try {
+            await socket.connect();
+            expect(fn).toBeCalled();
+        } finally {
+            server.stop();
+        }
     });
 
     it("should connect to a websocket without a session", async () => {
-        const url = "https://localhost";
         const path = "/v1/test";
 
         const client = new http.Client(url);
@@ -513,14 +514,13 @@ describe("Socket", () => {
     });
 
     it("should reconnect on socket errors", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
 
         const client = new http.Client(url);
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
         const fn = jest.fn();
 
         server.on("connection", () => {
@@ -539,14 +539,13 @@ describe("Socket", () => {
     });
 
     it("should reconnect when socket closes", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
 
         const client = new http.Client(url);
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
         const fn = jest.fn();
 
         server.on("connection", (ws) => {
@@ -565,7 +564,6 @@ describe("Socket", () => {
     });
 
     it("should receive messages", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
         const msg = "test message";
 
@@ -573,7 +571,7 @@ describe("Socket", () => {
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
         let ws: WebSocket | undefined;
 
         server.on("connection", (s) => {
@@ -593,7 +591,6 @@ describe("Socket", () => {
     });
 
     it("should send messages", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
         const msg = "test message";
 
@@ -601,7 +598,7 @@ describe("Socket", () => {
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
 
         server.on("connection", (ws: WebSocket) => {
             ws.on("message", (data: unknown) => {
@@ -618,7 +615,6 @@ describe("Socket", () => {
     });
 
     it("should send object", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
         const msgObject = {
             test: "test message",
@@ -629,7 +625,7 @@ describe("Socket", () => {
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
 
         server.on("connection", (ws: WebSocket) => {
             ws.on("message", (data: unknown) => {
@@ -646,7 +642,6 @@ describe("Socket", () => {
     });
 
     it("should auto connect when sending messages", (done) => {
-        const url = "https://localhost";
         const path = "/v1/test";
         const msg = "test message";
 
@@ -654,7 +649,7 @@ describe("Socket", () => {
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
 
         server.on("connection", (ws: WebSocket) => {
             ws.on("message", (data: unknown) => {
@@ -668,14 +663,13 @@ describe("Socket", () => {
     });
 
     it("should not auto retry when manually closed", async () => {
-        const url = "https://localhost:8080";
         const path = "/v1/test";
 
         const client = new http.Client(url);
         client.setSession(sessionID);
 
         const socket = client.socket(path, 1000);
-        const server = new Server(socket.socketAddress() + "?authorization=123124sadfasdf");
+        const server = new Server(socket.socketAddress());
         const fn = jest.fn();
 
         server.on("connection", (_) => {
@@ -686,7 +680,7 @@ describe("Socket", () => {
         const p = new Promise<void>((resolve) => {
             socket.close();
             setTimeout(() => {
-                expect(fn).toBeCalledTimes(1);
+                expect(fn).toBeCalledTimes(2);
                 server.stop();
                 resolve();
             }, 1100);
