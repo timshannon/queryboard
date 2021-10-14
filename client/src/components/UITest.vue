@@ -55,7 +55,7 @@
 
       <div>
         <div cds-layout="horizontal gap:lg align:vertical-center">
-          <cds-progress-circle status="info" size="xl"></cds-progress-circle>
+          <cds-progress-circle status="info" size="xl" />
 
           <cds-button status="primary">button</cds-button>
 
