@@ -1,7 +1,6 @@
 <template>
-  <div>
-    <Login v-if="hasSession" />
-    <div v-else cds-layout="vertical align:stretch">
+  <div cds-layout="p:md">
+    <div v-if="hasSession()" cds-layout="vertical align:stretch">
       <header cds-layout="p:md p@md:lg">
         <Toolbar />
       </header>
@@ -21,6 +20,7 @@
         </div>
       </div>
     </div>
+    <Login v-else />
   </div>
 </template>
 <script lang="ts">

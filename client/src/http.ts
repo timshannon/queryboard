@@ -9,7 +9,7 @@ const sessionExpirationKey = "QueryBoardSessionExpires";
 
 export interface Result<T> {
     request: XMLHttpRequest;
-    response?: T;
+    response: T;
 }
 
 export interface Page<T> {
@@ -207,6 +207,7 @@ export class Client {
             request.onload = (): void => {
                 const result: Result<T> = {
                     request, // original xhr request
+                    response: {} as T, // placeholder
                 };
 
                 let response: string | T | { message: string } | undefined;
@@ -235,9 +236,7 @@ export class Client {
                 }
 
                 if (request.status >= 200 && request.status < 400) {
-                    if (response) {
-                        result.response = response as T;
-                    }
+                    result.response = response as T;
                     return resolve(result);
                 }
 
@@ -245,6 +244,10 @@ export class Client {
                     const err = new HttpError(response.message, request, result.response);
                     notifyErrorHandlers(err);
                     return reject(err);
+                }
+
+                if (!response) {
+                    response = request.statusText;
                 }
                 const unknownErr = new HttpError(response as string, request, result.response);
                 notifyErrorHandlers(unknownErr);

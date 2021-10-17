@@ -17,11 +17,33 @@ export interface IUser {
     updatedDate: Date;
 }
 
+interface ISession {
+    id: string;
+    userID: string;
+    csrfToken: string;
+    expires: Date;
+}
+
 export default {
+    login: async (username: string, password: string, rememberMe: boolean): Promise<ISession> => {
+        const res = await client.post<ISession>("/v1/sessions/password", {
+            username,
+            password,
+            rememberMe,
+        });
+
+        if (!res.response) {
+            throw new Error("Invalid session");
+        }
+
+        client.setSession(res.response.id, rememberMe ? new Date(res.response.expires) : undefined);
+
+        return res.response;
+    },
     user: {
         get: async (username: string): Promise<IUser> => {
             const res = await client.get<IUser>(`/v1/users/${username}`);
-            return res.response!;
+            return res.response;
         },
     },
 };
