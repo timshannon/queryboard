@@ -7,8 +7,14 @@
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
+    "types": ["vite/client"],
     "lib": ["esnext", "dom"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "test/**/*"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "test/**/*"],
+  "exclude": [
+		"node_modules/**/*",
+		"test/**/*"
+	]
 }
