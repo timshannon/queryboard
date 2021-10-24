@@ -13,5 +13,8 @@ export default defineConfig({
     server: {
         port: 8070,
         strictPort: true,
+        proxy: {
+            '/v1': 'http://localhost:8071',
+        },
     },
 });

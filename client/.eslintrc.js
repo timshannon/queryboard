@@ -33,6 +33,7 @@ module.exports = {
 		"@typescript-eslint/no-unsafe-argument": "off",
 		"@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
 		"@typescript-eslint/restrict-template-expressions": "off",
+		"@typescript-eslint/no-unsafe-call": "off",
 		"vue/singleline-html-element-content-newline": "off",
 		"vue/html-self-closing": "off",
 		 "vue/max-attributes-per-line": "off",

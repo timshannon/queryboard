@@ -1,6 +1,6 @@
 <template>
   <div cds-layout="p:md">
-    <div v-if="hasSession()" cds-layout="vertical align:stretch">
+    <div v-if="loggedIn" cds-layout="vertical align:stretch">
       <header cds-layout="p:md p@md:lg">
         <Toolbar />
       </header>
@@ -20,18 +20,19 @@
         </div>
       </div>
     </div>
-    <Login v-else />
+    <Login v-else @login="checkSession" />
   </div>
 </template>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
 // All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+import "@cds/core/divider/register.js";
+import { ref } from "vue";
+
 import Login from "./views/Login.vue";
 import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
 import Editor from "./views/Editor.vue";
-
-import "@cds/core/divider/register.js";
 
 import { hasSession } from "./http";
 
@@ -43,8 +44,15 @@ export default {
     Editor,
   },
   setup() {
+    const loggedIn = ref(hasSession());
+
+    function checkSession() {
+      loggedIn.value = hasSession();
+    }
+
     return {
-      hasSession,
+      loggedIn,
+      checkSession,
     };
   }
 };

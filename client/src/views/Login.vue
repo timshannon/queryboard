@@ -22,7 +22,7 @@
         </cds-password>
         <cds-checkbox>
           <label>Remember me</label>
-          <input type="checkbox" name="rememberMe" />
+          <input v-model="rememberMe" type="checkbox" name="rememberMe" />
         </cds-checkbox>
       </cds-form-group>
       <div cds-text="right">
@@ -58,10 +58,11 @@ export default {
       },
     },
   },
-  setup() {
+  emits: ["login"],
+  setup(_, context) {
     const username = ref("");
     const password = ref("");
-    const rememberMe = ref(false);
+    const rememberMe = ref(true);
     const error = ref("");
     const loading = ref(false);
 
@@ -81,6 +82,7 @@ export default {
         loading.value = true;
         await server.login(username.value, password.value, rememberMe.value);
         loading.value = false;
+        context.emit("login");
       } catch (err) {
         loading.value = false;
         error.value = (err as HttpError).message;
