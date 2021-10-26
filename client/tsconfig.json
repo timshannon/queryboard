@@ -7,9 +7,10 @@
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
+    "noImplicitReturns": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "jest"],
     "lib": ["esnext", "dom"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "test/**/*"],
