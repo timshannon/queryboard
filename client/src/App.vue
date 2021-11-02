@@ -4,6 +4,7 @@
       <header cds-layout="p:md p@md:lg">
         <Toolbar />
       </header>
+      <cds-divider />
       <div cds-layout="horizontal align:vertical-stretch wrap:none">
         <nav cds-layout="p:md p@md:lg">
           <Sidebar />
