@@ -33,7 +33,7 @@ import { ref } from "vue";
 import Login from "./views/Login.vue";
 import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
-import Editor from "./views/Editor.vue";
+import Editor from "./components/Editor.vue";
 
 import { hasSession } from "./http";
 
