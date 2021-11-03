@@ -1,7 +1,7 @@
 <template>
-  <div cds-layout="p:md">
+  <div cds-layout="p:sm">
     <div v-if="loggedIn" cds-layout="vertical align:stretch">
-      <header cds-layout="p:md p@md:lg">
+      <header cds-layout="p:md">
         <Toolbar />
       </header>
       <cds-divider />
@@ -13,7 +13,14 @@
         <div cds-layout="vertical align:stretch">
           <div>
             <div cds-layout="vertical gap:md p:lg">
-              <Editor />
+              <Tabs>
+                <Tab name="untitled" selected>
+                  <Editor />
+                </Tab>
+                <Tab name="untitled-1">
+                  <h1>other tab</h1>
+                </Tab>
+              </Tabs>
             </div>
           </div>
           <cds-divider />
@@ -34,6 +41,8 @@ import Login from "./views/Login.vue";
 import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
 import Editor from "./components/Editor.vue";
+import Tabs from "./components/Tabs.vue";
+import Tab from "./components/Tab.vue";
 
 import { hasSession } from "./http";
 
@@ -43,6 +52,8 @@ export default {
     Toolbar,
     Sidebar,
     Editor,
+    Tabs,
+    Tab,
   },
   setup() {
     const loggedIn = ref(hasSession());
