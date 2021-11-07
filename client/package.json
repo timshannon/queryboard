@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
     "test": "jest --forceExit --coverage --verbose=true --detectOpenHandles --runInBand",
     "serve": "vite preview"
   },
@@ -11,7 +11,7 @@
     "@cds/core": "^5.5.3",
     "install": "^0.13.0",
     "modern-normalize": "^1.1.0",
-    "monaco-editor": "^0.29.1",
+    "monaco-editor": "^0.30.0",
     "npm": "^8.1.2",
     "vue": "^3.2.6"
   },
