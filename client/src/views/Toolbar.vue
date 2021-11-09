@@ -1,5 +1,5 @@
 <template>
-  <div cds-layout="horizontal">
+  <div cds-layout="horizontal p:md">
     <cds-button status="success" size="sm">New Board</cds-button>
     <cds-button cds-layout="align:right" size="sm">Settings</cds-button>
   </div>

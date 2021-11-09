@@ -1,12 +1,15 @@
 <template>
-  <div>
+  <div class="editor-container" ref="container">
     <div class="editor" ref="monacoRef"></div>
   </div>
 </template>
 <style lang="scss">
+.editor-container {
+  width: 100%;
+  height: 100%;
+}
 .editor {
-  width: 50vw;
-  height: 75vh;
+  position: fixed;
 }
 </style>
 <script lang="ts">
@@ -19,11 +22,10 @@ import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import sqlWorker from "monaco-editor/esm/vs/basic-languages/sql/sql?worker";
 
 
-
-
 export default {
   setup() {
     const monacoRef = ref<HTMLElement>();
+    const container = ref<HTMLElement>();
 
     // @ts-ignore
     self.MonacoEnvironment = {
@@ -37,23 +39,32 @@ export default {
 
     let editor: monaco.editor.IStandaloneCodeEditor;
 
+    const resizeObserver = new ResizeObserver(() => {
+      if (container.value) {
+        editor.layout({ width: container.value?.offsetWidth, height: container.value?.offsetHeight });
+      }
+    });
+
     onMounted(() => {
       editor = monaco.editor.create(monacoRef.value as HTMLElement, {
-        value: "select * from table",
+        value: "select * \nfrom table\nwhere name = 'test'\nand id = 3;",
         language: "sql",
         minimap: {
           enabled: false,
         },
-      })
+        scrollBeyondLastLine: false,
+      });
+      resizeObserver.observe(container.value as HTMLElement);
     });
 
     onUnmounted(() => {
+      resizeObserver.disconnect();
       editor.dispose();
     });
 
-
     return {
       monacoRef,
+      container,
     };
   }
 };

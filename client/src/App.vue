@@ -1,36 +1,28 @@
 <template>
-  <div cds-layout="p:sm">
-    <div v-if="loggedIn" cds-layout="vertical align:stretch">
-      <header cds-layout="p:md">
-        <Toolbar />
-      </header>
+  <div>
+    <div v-if="loggedIn" id="appContainer" cds-layout="vertical">
+      <Toolbar />
       <cds-divider />
-      <div cds-layout="horizontal align:vertical-stretch wrap:none">
-        <nav cds-layout="p:md p@md:lg">
+      <div cds-layout="horizontal align:stretch">
+        <nav cds-layout="p:sm align:shrink">
           <Sidebar />
         </nav>
-        <cds-divider orientation="vertical" />
-        <div cds-layout="vertical align:stretch">
-          <div>
-            <div cds-layout="vertical gap:md p:lg">
-              <Tabs>
-                <Tab name="untitled" selected>
-                  <Editor />
-                </Tab>
-                <Tab name="untitled-1">
-                  <h1>other tab</h1>
-                </Tab>
-              </Tabs>
-            </div>
-          </div>
+        <cds-divider orientation="vertical" cds-layout="align:shrink" />
+        <div cds-layout="vertical">
+          <Editor />
           <cds-divider />
-          <footer cds-layout="p-y:md p-x:lg">footer</footer>
+          <footer cds-layout="p:md">footer</footer>
         </div>
       </div>
     </div>
     <Login v-else @login="checkSession" />
   </div>
 </template>
+<style lang="scss">
+#appContainer {
+  height: 100vh;
+}
+</style>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
 // All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
@@ -41,8 +33,6 @@ import Login from "./views/Login.vue";
 import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
 import Editor from "./components/Editor.vue";
-import Tabs from "./components/Tabs.vue";
-import Tab from "./components/Tab.vue";
 
 import { hasSession } from "./http";
 
@@ -52,8 +42,6 @@ export default {
     Toolbar,
     Sidebar,
     Editor,
-    Tabs,
-    Tab,
   },
   setup() {
     const loggedIn = ref(hasSession());
