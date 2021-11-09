@@ -3,17 +3,26 @@
     <div v-if="loggedIn" id="appContainer" cds-layout="vertical">
       <Toolbar />
       <cds-divider />
-      <div cds-layout="horizontal align:stretch">
-        <nav cds-layout="p:sm align:shrink">
-          <Sidebar />
-        </nav>
-        <cds-divider orientation="vertical" cds-layout="align:shrink" />
-        <div cds-layout="vertical">
-          <Editor />
-          <cds-divider />
-          <footer cds-layout="p:md">footer</footer>
-        </div>
-      </div>
+      <ResizePanel
+        orientation="horizontal"
+        cds-layout="horizontal align:stretch"
+      >
+        <template v-slot:1>
+          <nav cds-layout="p:sm align:shrink">
+            <Sidebar />
+          </nav>
+        </template>
+        <template v-slot:2>
+          <ResizePanel orientation="vertical">
+            <template v-slot:1>
+              <Editor />
+            </template>
+            <template v-slot:2>
+              <footer cds-layout="p:md">footer</footer>
+            </template>
+          </ResizePanel>
+        </template>
+      </ResizePanel>
     </div>
     <Login v-else @login="checkSession" />
   </div>
@@ -33,6 +42,7 @@ import Login from "./views/Login.vue";
 import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
 import Editor from "./components/Editor.vue";
+import ResizePanel from "./components/ResizePanel.vue";
 
 import { hasSession } from "./http";
 
@@ -42,6 +52,7 @@ export default {
     Toolbar,
     Sidebar,
     Editor,
+    ResizePanel,
   },
   setup() {
     const loggedIn = ref(hasSession());
