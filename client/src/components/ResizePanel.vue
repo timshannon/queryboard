@@ -1,17 +1,14 @@
 <template>
   <div :cds-layout="orientation">
-    <div :style="style1" ref="slot1">
-      <slot name="1"></slot>
-    </div>
+    <slot name="1"></slot>
     <cds-divider
       :orientation="dividerOrientation"
       cds-layout="align:shrink"
+      ref="divider"
       @mousedown="startResize"
       class="draggable"
     />
-    <div :style="style2" ref="slot2">
-      <slot name="2"></slot>
-    </div>
+    <slot name="2"></slot>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -25,13 +22,18 @@
   padding-top: var(--cds-global-space-3);
   padding-bottom: var(--cds-global-space-3);
 }
+
+.draggable:hover {
+  --color: var(--cds-alias-object-interaction-background-highlight);
+  --size: 0.2rem;
+}
 </style>
 <script lang="ts">
 // Copyright 2021 Tim Shannon. 
 // All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import "@cds/core/divider/register.js";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 
 export enum orientation {
   HORIZONTAL = "horizontal",
@@ -47,13 +49,10 @@ export default {
         return (
           [orientation.HORIZONTAL, orientation.VERTICAL].indexOf(value) !== -1
         );
-      }
+      },
     },
-
   },
   setup(props) {
-    const slot1 = ref<HTMLElement>();
-    const slot2 = ref<HTMLElement>();
     let startOffset = -1;
     let repaintWait = false;
     const dividerOrientation = computed(() => {
@@ -65,51 +64,33 @@ export default {
 
     const size1 = ref(0);
     const size2 = ref(0);
-
-    const style1 = computed((): any => {
-      if (!size1.value) {
-        return null;
-      }
-
-      if (props.orientation == orientation.HORIZONTAL) {
-        return {
-          width: size1.value + "px"
-        };
-      }
-      return {
-        height: size1.value + "px"
-      };
-    });
-
-    const style2 = computed((): any => {
-      if (!size2.value) {
-        return null;
-      }
-
-      if (props.orientation == orientation.HORIZONTAL) {
-        return {
-          width: size2.value + "px"
-        };
-      }
-      return {
-        height: size2.value + "px"
-      };
-    });
-
+    const divider = ref<HTMLElement>();
+    var slot1: HTMLElement;
+    var slot2: HTMLElement;
 
     function resize(e: MouseEvent) {
       if (repaintWait) {
         requestAnimationFrame(() => {
           // only update width and delta on animation frames (60fps)
           repaintWait = false;
+
+          if (!slot1 || !slot2) {
+            return;
+          }
+
           if (props.orientation == orientation.HORIZONTAL) {
             size1.value = size1.value + (e.clientX - startOffset);
             size2.value = size2.value - (e.clientX - startOffset);
             startOffset = e.clientX;
+            slot1.style.width = size1.value + "px";
+            slot2.style.width = size2.value + "px";
           } else {
             size1.value = size1.value + (e.clientY - startOffset);
             size2.value = size2.value - (e.clientY - startOffset);
             startOffset = e.clientY;
+            slot1.style.height = size1.value + "px";
+            slot2.style.height = size2.value + "px";
+
           }
         });
       }
@@ -125,17 +106,17 @@ export default {
     }
 
     function startResize(e: MouseEvent): boolean {
-      if (!slot1.value || !slot2.value) {
+      if (!slot1 || !slot2) {
         return false;
       }
 
       if (props.orientation == orientation.HORIZONTAL) {
-        size1.value = slot1.value.offsetWidth;
-        size2.value = slot2.value.offsetWidth;
+        size1.value = slot1.offsetWidth;
+        size2.value = slot2.offsetWidth;
         startOffset = e.clientX;
       } else {
-        size1.value = slot1.value.offsetHeight;
-        size2.value = slot2.value.offsetHeight;
+        size1.value = slot1.offsetHeight;
+        size2.value = slot2.offsetHeight;
         startOffset = e.clientY;
       }
 
@@ -144,16 +125,23 @@ export default {
       return false;
     }
 
+    onMounted(() => {
+      if (!divider.value) {
+        return
+      }
+
+      slot1 = divider.value.previousElementSibling as HTMLElement;;
+      slot2 = divider.value.nextElementSibling as HTMLElement;
+
+    });
+
     return {
-      slot1,
-      slot2,
       dividerOrientation,
       resize,
       startResize,
+      divider,
       size1,
       size2,
-      style1,
-      style2,
     };
   }
 };

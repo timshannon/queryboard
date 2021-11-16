@@ -8,7 +8,7 @@
         cds-layout="horizontal align:stretch"
       >
         <template v-slot:1>
-          <nav cds-layout="p:sm align:shrink">
+          <nav cds-layout="align:shrink p:sm">
             <Sidebar />
           </nav>
         </template>
@@ -18,7 +18,7 @@
               <Editor />
             </template>
             <template v-slot:2>
-              <footer cds-layout="p:md">footer</footer>
+              <footer cds-layout="align:shrink p:md">footer</footer>
             </template>
           </ResizePanel>
         </template>
