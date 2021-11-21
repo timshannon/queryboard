@@ -25,7 +25,7 @@
 
 .draggable:hover {
   --color: var(--cds-alias-object-interaction-background-highlight);
-  --size: 0.2rem;
+  --size: 0.1rem;
 }
 </style>
 <script lang="ts">

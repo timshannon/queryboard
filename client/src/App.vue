@@ -15,6 +15,11 @@
         <template v-slot:2>
           <ResizePanel orientation="vertical">
             <template v-slot:1>
+              <Tabs>
+                <Tab active>New Query</Tab>
+                <Tab>New Query 2</Tab>
+                <Tab>New Query 3</Tab>
+              </Tabs>
               <Editor />
             </template>
             <template v-slot:2>
@@ -43,6 +48,8 @@ import Sidebar from "./views/Sidebar.vue";
 import Toolbar from "./views/Toolbar.vue";
 import Editor from "./components/Editor.vue";
 import ResizePanel from "./components/ResizePanel.vue";
+import Tab from "./components/Tab.vue";
+import Tabs from "./components/Tabs.vue";
 
 import { hasSession } from "./http";
 
@@ -53,6 +60,8 @@ export default {
     Sidebar,
     Editor,
     ResizePanel,
+    Tab,
+    Tabs,
   },
   setup() {
     const loggedIn = ref(hasSession());
