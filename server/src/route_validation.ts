@@ -307,11 +307,11 @@ class UploadFile {
             return;
         }
 
-        let busboy: busboy.Busboy;
+        let busboy: Busboy.Busboy;
 
         try {
             busboy = new Busboy({
-                headers: req.headers,
+                headers: req.headers as Busboy.BusboyHeaders,
                 limits: {
                     fileSize: this.fileSize,
                     files: this.maxFileCount,

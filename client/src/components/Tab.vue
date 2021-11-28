@@ -37,7 +37,7 @@
 .tab[active] {
   border-bottom: var(--cds-alias-object-border-width-300) solid
     var(--cds-alias-object-interaction-background-highlight);
-  background: var(--cds-alias-object-interaction-background-active);
+  //background: var(--cds-alias-object-interaction-background-active);
   color: var(--cds-alias-object-interaction-color-active);
 }
 
