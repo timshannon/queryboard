@@ -2,7 +2,7 @@
 
 import * as http from "../src/http";
 
-import { Server, WebSocket } from "mock-socket";
+import { Client, Server } from "mock-socket";
 import mock from "xhr-mock";
 
 const testURL = "http://localhost";
@@ -572,7 +572,7 @@ describe("Socket", () => {
 
         const socket = client.socket(path, 1000);
         const server = new Server(socket.socketAddress());
-        let ws: WebSocket | undefined;
+        let ws: Client | undefined;
 
         server.on("connection", (s) => {
             ws = s;
@@ -600,7 +600,7 @@ describe("Socket", () => {
         const socket = client.socket(path, 1000);
         const server = new Server(socket.socketAddress());
 
-        server.on("connection", (ws: WebSocket) => {
+        server.on("connection", (ws) => {
             ws.on("message", (data: unknown) => {
                 expect(data).toBe(msg);
                 server.stop();
@@ -627,7 +627,7 @@ describe("Socket", () => {
         const socket = client.socket(path, 1000);
         const server = new Server(socket.socketAddress());
 
-        server.on("connection", (ws: WebSocket) => {
+        server.on("connection", (ws) => {
             ws.on("message", (data: unknown) => {
                 expect(data).toBe(JSON.stringify(msgObject));
                 server.stop();
@@ -651,7 +651,7 @@ describe("Socket", () => {
         const socket = client.socket(path, 1000);
         const server = new Server(socket.socketAddress());
 
-        server.on("connection", (ws: WebSocket) => {
+        server.on("connection", (ws) => {
             ws.on("message", (data: unknown) => {
                 expect(data).toBe(msg);
                 server.stop();

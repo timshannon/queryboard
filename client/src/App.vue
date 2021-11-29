@@ -16,11 +16,16 @@
           <ResizePanel orientation="vertical">
             <template v-slot:1>
               <Tabs>
-                <Tab active>New Query</Tab>
-                <Tab>New Query 2</Tab>
-                <Tab>New Query 3</Tab>
+                <Tab :selected="true" name="New Query">
+                  <Editor />
+                </Tab>
+                <Tab name="New Query 2">
+                  <Editor />
+                </Tab>
+                <Tab name="New Query 3">
+                  <Editor />
+                </Tab>
               </Tabs>
-              <Editor />
             </template>
             <template v-slot:2>
               <footer cds-layout="align:shrink p:md">footer</footer>
