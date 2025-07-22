@@ -12,20 +12,16 @@ import * as fs from "fs";
 
 const SYSTEMDBNAME = "system.db";
 
-type changeResult = {lastID: number | BigInt, changes: number};
+interface changeResult {lastID: number | bigint, changes: number};
 
 type SQLiteType = number | string | bigint | Buffer | null;
 
-type SQLiteRecord = {
-    [key: string]: SQLiteType;
-};
+type SQLiteRecord = Record<string, SQLiteType>;
 
 // addss support for boolean and Date
 type QBSQLType = number | string | bigint | Buffer | null | boolean | Date;
 
-type QBSQLRecord = {
-    [key: string]: QBSQLType;
-};
+type QBSQLRecord = Record<string, QBSQLType>;
 
 export class Connection {
     public readonly cnn: sqlite.Database;

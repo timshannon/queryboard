@@ -25,9 +25,7 @@ interface IField {
     validate(req: express.Request): Promise<void>;
 }
 
-interface PromiseHandler {
-    (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void>;
-}
+type PromiseHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 
 class Route {
     public fields: IField[] = [];
@@ -268,7 +266,7 @@ class Field {
             if (value !== undefined && value !== "" && value !== null) {
                 try {
                     return new URL(value).toString();
-                } catch (err) {
+                } catch {
                     throw new fail.Failure(`Invalid url: ${value}`);
                 }
             }
