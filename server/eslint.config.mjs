@@ -8,5 +8,5 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.stylistic,
-  globalIgnores(["**/node_modules/", "**/dist/", "**/coverage"]),
+  globalIgnores(["**/node_modules/", "**/dist/", "**/coverage", "./data/"]),
 );

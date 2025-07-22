@@ -34,7 +34,7 @@ beforeAll(async () => {
     res = await request(app).get("/v1/sessions")
         .set("Authorization", `Bearer ${admin.token}`);
 
-    admin.csrf = res.get("X-CSRFToken");
+    admin.csrf = res.get("X-CSRFToken") || "";
 
 
     // add other user
@@ -59,7 +59,7 @@ beforeAll(async () => {
     res = await request(app).get("/v1/sessions")
         .set("Authorization", `Bearer ${otherUser.token}`);
 
-    otherUser.csrf = res.get("X-CSRFToken");
+    otherUser.csrf = res.get("X-CSRFToken") || "";
 });
 
 async function setSetting(id: string, value: unknown): Promise<void> {

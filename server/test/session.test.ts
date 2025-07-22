@@ -140,7 +140,7 @@ describe("DELETE /v1/sessions/", () => {
 
         res = await request(app).delete("/v1/sessions")
             .set("Authorization", `Bearer ${auth.body.id}`)
-            .set("X-CSRFToken", res.get("X-CSRFToken"));
+            .set("X-CSRFToken", res.get("X-CSRFToken") || "");
         expect(res.status).toBe(200);
 
         res = await request(app).get("/v1/sessions")
@@ -159,7 +159,7 @@ describe("DELETE /v1/sessions/", () => {
         let res = await request(app).get("/v1/sessions")
             .set("Authorization", `Bearer ${auth.body.id}`);
 
-        const csrfToken = res.get("X-CSRFToken");
+        const csrfToken = res.get("X-CSRFToken") || "";
 
         // log into another session
         const other = await request(app).post("/v1/sessions/password")

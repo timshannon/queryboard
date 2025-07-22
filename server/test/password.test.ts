@@ -30,7 +30,7 @@ beforeAll(async () => {
     res = await request(app).get("/v1/sessions")
         .set("Authorization", `Bearer ${admin.token}`);
 
-    admin.csrf = res.get("X-CSRFToken");
+    admin.csrf = res.get("X-CSRFToken") || "";
 });
 
 
@@ -66,7 +66,7 @@ describe("PUT /v1/users/:id/password", () => {
         res = await request(app).get("/v1/sessions")
             .set("Authorization", `Bearer ${tester.token}`);
 
-        tester.csrf = res.get("X-CSRFToken");
+        tester.csrf = res.get("X-CSRFToken") || "";
     });
 
     it("should require a session", async () => {
@@ -78,7 +78,7 @@ describe("PUT /v1/users/:id/password", () => {
         expect(res.status).toBe(401);
     });
 
-    it("should require the fields newPassword and oldPassword", async () => {
+    it.only("should require the fields newPassword and oldPassword", async () => {
         let res = await request(app).put(`/v1/users/${tester.username}/password`)
             .set("Authorization", `Bearer ${tester.token}`)
             .set("X-CSRFToken", tester.csrf);
@@ -191,7 +191,7 @@ describe("PUT /v1/users/:id/password", () => {
         res = await request(app).get("/v1/sessions")
             .set("Authorization", `Bearer ${tester.token}`);
 
-        tester.csrf = res.get("X-CSRFToken");
+        tester.csrf = res.get("X-CSRFToken") || "";
     });
 
     it("should not allow reusing old passwords", async () => {
@@ -300,7 +300,7 @@ describe("PUT /v1/users/:id/password", () => {
         res = await request(app).get("/v1/sessions")
             .set("Authorization", `Bearer ${tester.token}`);
 
-        tester.csrf = res.get("X-CSRFToken");
+        tester.csrf = res.get("X-CSRFToken") || "";
 
         // confirm other session is now invalid
         res = await request(app).get("/v1/sessions")

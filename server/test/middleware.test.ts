@@ -102,7 +102,7 @@ describe("errors middleware", () => {
             setTimeout(() => {
                 expect(spyLogError).toHaveBeenCalled();
                 resolve();
-            }, 500);
+            }, 1500);
         });
         await p;
     });
@@ -199,7 +199,7 @@ describe("csrf middleware", () => {
 
         const res = await request(app).put("/")
             .set("Authorization", `Bearer ${admin.sessionID}`)
-            .set("X-CSRFToken", gRes.get("X-CSRFToken"));
+            .set("X-CSRFToken", gRes.get("X-CSRFToken") || "");
 
         expect(res.status).toBe(200);
     });

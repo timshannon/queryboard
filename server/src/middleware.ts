@@ -48,7 +48,8 @@ export function session() {
     };
 }
 
-export function errors(err: Error, _req: express.Request, res: express.Response,): void {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function errors(err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction): void {
     if (err instanceof fail.Failure) {
         log.warning(err);
         res.status(err.status).send({message: err.message});
