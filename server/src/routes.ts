@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 import express from "express";
 
 import * as routes from "./route_validation";
@@ -7,7 +7,7 @@ import * as session from "./routes/v1/session";
 import * as user from "./routes/v1/user";
 import * as settings from "./routes/v1/settings";
 
-const { route, body, param } = routes;
+const {route, body, param} = routes;
 
 export default (app: express.Express): void => {
     app.use(express.static(config.clientDir));

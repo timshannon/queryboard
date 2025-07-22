@@ -1,7 +1,7 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import { Password } from "../../models/password";
-import { Session } from "../../models/session";
+import {Password} from "../../models/password";
+import {Session} from "../../models/session";
 
 import express from "express";
 import * as fail from "../../fail";
@@ -9,7 +9,8 @@ import * as fail from "../../fail";
 export function passwordLogin(req: express.Request, res: express.Response): void {
     const rememberMe = req.body.rememberMe || false;
 
-    const session = Password.login(req.body.username, req.body.password, rememberMe, req.ip, req.get("User-Agent"));
+    // FIXME: Will IP every be blank / undefined, handle proxies?
+    const session = Password.login(req.body.username, req.body.password, rememberMe, req.ip || "", req.get("User-Agent"));
     res.status(201).send(session);
 }
 

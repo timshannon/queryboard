@@ -1,7 +1,7 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import config from "../config";
-import { ensureSchema, Schema } from "./schema_control";
+import {ensureSchema, Schema} from "./schema_control";
 import schema from "./schema";
 
 import sqlite from "better-sqlite3";
@@ -12,7 +12,7 @@ import * as fs from "fs";
 
 const SYSTEMDBNAME = "system.db";
 
-type changeResult = { lastID: number | BigInt, changes: number };
+type changeResult = {lastID: number | BigInt, changes: number};
 
 type SQLiteType = number | string | bigint | Buffer | null;
 
@@ -32,7 +32,7 @@ export class Connection {
 
     constructor(public readonly filepath: string, public readonly options?: sqlite.Options, schema?: Schema) {
         if (!filepath.startsWith(":memory:")) {
-            fs.mkdirSync(path.dirname(this.filepath), { recursive: true });
+            fs.mkdirSync(path.dirname(this.filepath), {recursive: true});
         }
 
         this.cnn = new sqlite(this.filepath, this.options);
@@ -114,7 +114,7 @@ export class Connection {
             }
             return [] as Results[];
 
-        } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
+        } catch (err) {throw new Error(`${err}\n QUERY: ${sql}`);}
     }
 
     public prepareQuery<Params extends QBSQLRecord | void, Results extends QBSQLRecord>
@@ -127,9 +127,9 @@ export class Connection {
                 try {
                     const res = statement.all(this.prepParameters(params || {}));
                     return this.prepResult(statement.columns(), res as SQLiteType[][]) as Results[];
-                } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
+                } catch (err) {throw new Error(`${err}\n QUERY: ${sql}`);}
             };
-        } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
+        } catch (err) {throw new Error(`${err}\n QUERY: ${sql}`);}
     }
 
     public prepareUpdate<Params extends QBSQLRecord>(sql: string): (params: Params) => changeResult {
@@ -138,10 +138,10 @@ export class Connection {
             return (params: Params): changeResult => {
                 try {
                     const res = statement.run(this.prepParameters(params));
-                    return { changes: res.changes, lastID: res.lastInsertRowid };
-                } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
+                    return {changes: res.changes, lastID: res.lastInsertRowid};
+                } catch (err) {throw new Error(`${err}\n QUERY: ${sql}`);}
             };
-        } catch (err) { throw new Error(`${err}\n QUERY: ${sql}`); }
+        } catch (err) {throw new Error(`${err}\n QUERY: ${sql}`);}
     }
 
     public beginTran<T>(wrap: () => T): T {

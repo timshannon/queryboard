@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 process.env.DATADIR = ":memory:";
 
 import * as data from "../src/data/data";
@@ -58,8 +58,8 @@ describe("data connections", () => {
         `);
 
 
-        const record = { id: 1, valid: false, the_date: new Date() };
-        const updates = { id: 2, valid: true, the_date: new Date(Date.now() - 10000) };
+        const record = {id: 1, valid: false, the_date: new Date()};
+        const updates = {id: 2, valid: true, the_date: new Date(Date.now() - 10000)};
 
         const insert = cnn.prepareUpdate<typeof record>("insert into test_datatypes values ($id, $valid, $the_date)");
         const select = cnn.prepareQuery<void, typeof record>("select id, valid, the_date from  test_datatypes");

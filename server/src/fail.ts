@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 // Failure is an error that is visible to a client, and comes with an associated HTTP status code
 export class Failure extends Error {

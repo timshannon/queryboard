@@ -1,11 +1,11 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 process.env.DATADIR = ":memory:";
 process.env.STARTUPPASSWORD = "AdminPassword!1";
 
 import app from "../src/app";
-import { sysdb } from "../src/data/data";
+import {sysdb} from "../src/data/data";
 
-import { addDays, isAfter, isBefore } from "date-fns";
+import {addDays, isAfter, isBefore} from "date-fns";
 import request from "supertest";
 
 const user = {
@@ -17,7 +17,7 @@ describe("POST /v1/sessions/password", () => {
     it("should require username and password", async () => {
         const res = await request(app).post("/v1/sessions/password");
         expect(res.status).toBe(400);
-        expect(res.body).toEqual({ message: "The field 'username' is required" });
+        expect(res.body).toEqual({message: "The field 'username' is required"});
     });
 
     it("it should fail with an incorrect username", async () => {
@@ -27,7 +27,7 @@ describe("POST /v1/sessions/password", () => {
                 password: user.password,
             });
         expect(res.status).toBe(400);
-        expect(res.body).toEqual({ message: "Invalid user or password" });
+        expect(res.body).toEqual({message: "Invalid user or password"});
     });
 
     it("it should fail with an incorrect password", async () => {
@@ -37,7 +37,7 @@ describe("POST /v1/sessions/password", () => {
                 password: "badPassword",
             });
         expect(res.status).toBe(400);
-        expect(res.body).toEqual({ message: "Invalid user or password" });
+        expect(res.body).toEqual({message: "Invalid user or password"});
 
     });
 
@@ -71,12 +71,12 @@ describe("POST /v1/sessions/password", () => {
     describe("inactive users", () => {
         afterEach(() => {
             sysdb.query("update users set start_date = $start, end_date = $end where username = $username",
-                { start: addDays(new Date(), -1), end: null, username: user.username });
+                {start: addDays(new Date(), -1), end: null, username: user.username});
         });
 
         it("should not allow a logon if user hasn't started yet", async () => {
             sysdb.query("update users set start_date = $start where username = $username",
-                { start: addDays(new Date(), 1), username: user.username });
+                {start: addDays(new Date(), 1), username: user.username});
             const res = await request(app).post("/v1/sessions/password")
                 .send({
                     username: user.username,
@@ -87,7 +87,7 @@ describe("POST /v1/sessions/password", () => {
 
         it("should not allow a logon if user has been ended", async () => {
             sysdb.query("update users set end_date = $end where username = $username",
-                { end: addDays(new Date(), -1), username: user.username });
+                {end: addDays(new Date(), -1), username: user.username});
             const res = await request(app).post("/v1/sessions/password")
                 .send({
                     username: user.username,
@@ -172,7 +172,7 @@ describe("DELETE /v1/sessions/", () => {
         res = await request(app).delete("/v1/sessions")
             .set("Authorization", `Bearer ${auth.body.id}`)
             .set("X-CSRFToken", csrfToken)
-            .send({ id: other.body.id });
+            .send({id: other.body.id});
         expect(res.status).toBe(200);
 
         res = await request(app).get("/v1/sessions")

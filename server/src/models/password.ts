@@ -1,14 +1,14 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import sql from "./password_sql";
-import { Session } from "./session";
-import { User } from "./user";
-import { sysdb } from "../data/data";
+import {Session} from "./session";
+import {User} from "./user";
+import {sysdb} from "../data/data";
 
 import * as pwdSvc from "../services/password";
 import settings from "./settings";
 
-import { addDays, isBefore } from "date-fns";
+import {addDays, isBefore} from "date-fns";
 import * as fail from "../fail";
 
 interface IPasswordFields {
@@ -49,7 +49,7 @@ export class Password {
     }
 
     public static get(username: string): Password {
-        const res = sql.get({ username });
+        const res = sql.get({username});
         if (res.length === 0) {
             throw new fail.NotFound(`No password found for user ${username}`);
         }
@@ -74,7 +74,7 @@ export class Password {
 
         // TODO: Ratelimit password attempts
         return sysdb.beginTran<Session>((): Session => {
-            const res = sql.login({ username });
+            const res = sql.login({username});
             if (res.length === 0) {
                 throw errLogin;
             }
@@ -179,7 +179,7 @@ export class Password {
         const reuse = settings.password.reuseCheck.get();
         if (reuse > 0) {
             // test each previous password using that passwords hash version
-            const res = sql.history.get({ username: this.username, limit: reuse });
+            const res = sql.history.get({username: this.username, limit: reuse});
             for (const row of res) {
                 const passHistory = new Password({
                     username: row.username,

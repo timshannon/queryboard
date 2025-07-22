@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import * as fail from "../fail";
 import settings from "../models/settings";
@@ -30,7 +30,7 @@ export const currentVersion = versions.length - 1;
 export default versions[currentVersion];
 
 // password version refers to index of default export
-export { versions };
+export {versions};
 
 const BAD_PASSWORD_INDEX = fs.readFileSync("./src/services/bad_passwords.txt", "utf8");
 /* eslint-disable quotes, no-useless-escape */

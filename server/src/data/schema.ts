@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 /*
 Always add schema updates to the bottom of the array.  Either maintain backwards compatibility, or included
 scripts to update the old schema to the new schema.

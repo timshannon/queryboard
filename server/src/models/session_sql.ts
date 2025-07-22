@@ -1,5 +1,5 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
-import { sysdb } from "../data/data";
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+import {sysdb} from "../data/data";
 
 export default {
     insert: sysdb.prepareUpdate<{

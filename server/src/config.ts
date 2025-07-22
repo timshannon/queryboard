@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import env from "dotenv";
 
@@ -19,6 +19,9 @@ const config = {
 
     // log level is what level of messages to show in the log
     logLevel: process.env.LOG_LEVEL || ((process.env.NODE_ENV === "production") ? "WARNING" : "DEBUG"),
+
+
+    //TODO: Trusted proxies settings: https://expressjs.com/en/guide/behind-proxies.html
 };
 
 export default config;

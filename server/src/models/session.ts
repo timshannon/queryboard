@@ -1,12 +1,12 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import settings from "./settings";
 import sql from "./session_sql";
-import { User } from "./user";
-import { random } from "../data/data";
+import {User} from "./user";
+import {random} from "../data/data";
 import * as fail from "../fail";
 
-import { addDays, isBefore } from "date-fns";
+import {addDays, isBefore} from "date-fns";
 
 interface ISessionFields {
     id: string;
@@ -50,7 +50,7 @@ export class Session {
     }
 
     public static get(id: string): Session | null {
-        const res = sql.get({ session_id: id });
+        const res = sql.get({session_id: id});
         if (res.length === 0) {
             return null;
         }
@@ -131,7 +131,7 @@ export class Session {
 
     // logs out of the a session
     public logout(): void {
-        sql.logout({ session_id: this.id });
+        sql.logout({session_id: this.id});
     }
 
 

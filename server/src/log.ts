@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 import "source-map-support/register"; // gives us stack line numbers in ts code
 
 import config from "./config";
@@ -78,11 +78,11 @@ function log(logLevel: level, message: string, stack?: string) {
     let logFunc;
 
     if (logLevel === level.ERROR) {
-        logFunc = (msg: string) => { console.error(`${COLOR_RED}${msg}${COLOR_RESET}`); };
+        logFunc = (msg: string) => {console.error(`${COLOR_RED}${msg}${COLOR_RESET}`);};
     } else if (logLevel === level.WARNING) {
-        logFunc = (msg: string) => { console.warn(`${COLOR_YELLOW}${msg}${COLOR_RESET}`); };
+        logFunc = (msg: string) => {console.warn(`${COLOR_YELLOW}${msg}${COLOR_RESET}`);};
     } else if (logLevel === level.INFO) {
-        logFunc = (msg: string) => { console.log(`${COLOR_CYAN}${msg}${COLOR_RESET}`); };
+        logFunc = (msg: string) => {console.log(`${COLOR_CYAN}${msg}${COLOR_RESET}`);};
     } else {
         logFunc = console.log;
     }

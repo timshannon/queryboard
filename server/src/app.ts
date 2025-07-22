@@ -1,8 +1,8 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import config from "./config";
 import routes from "./routes";
-import { User } from "./models/user";
+import {User} from "./models/user";
 
 import * as middleware from "./middleware";
 
@@ -10,7 +10,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
-import { json } from "body-parser";
+import {json} from "body-parser";
 
 // Create Express server
 const app = express();

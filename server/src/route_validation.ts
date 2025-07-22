@@ -1,9 +1,9 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import Busboy from "busboy";
-import { isValid } from "date-fns";
+import {isValid} from "date-fns";
 import * as express from "express";
-import { URL } from "url";
+import {URL} from "url";
 
 import * as fail from "./fail";
 import * as uuid from "./uuid";
@@ -310,20 +310,20 @@ class UploadFile {
         let busboy: Busboy.Busboy;
 
         try {
-            busboy = new Busboy({
-                headers: req.headers as Busboy.BusboyHeaders,
+            busboy = Busboy({
+                headers: req.headers,
                 limits: {
                     fileSize: this.fileSize,
                     files: this.maxFileCount,
                 },
-            });
+            } as Busboy.BusboyConfig);
         } catch (err) {
             throw new fail.Failure(`Could not parse file data: ${err}`);
         }
 
         req.pipe(busboy);
         return new Promise((resolve, reject) => {
-            busboy.on("file", (_, stream, filename, encoding, contentType) => {
+            busboy.on("file", (_: any, stream: any, filename: string, encoding: string, contentType: string) => {
                 if (this.contentTypes.length > 0 && this.contentTypes.indexOf(contentType) === -1) {
                     reject(new fail.Failure(`Content-Type is not one of the following: ${this.contentTypes}`));
                 }
@@ -335,7 +335,7 @@ class UploadFile {
                 const chunks: Uint8Array[] = [];
                 let limitReached = false;
 
-                stream.on("data", (chunk) => {
+                stream.on("data", (chunk: any) => {
                     chunks.push(chunk);
                 });
 

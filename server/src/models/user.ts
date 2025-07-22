@@ -1,15 +1,15 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import { sysdb, random } from "../data/data";
+import {sysdb, random} from "../data/data";
 import log from "../log";
-import { Session } from "./session";
-import { Password } from "./password";
+import {Session} from "./session";
+import {Password} from "./password";
 import * as pwdSvc from "../services/password";
 import sql from "./user_sql";
 import * as fail from "../fail";
 import config from "../config";
 
-import { isAfter, isBefore, addSeconds, addDays } from "date-fns";
+import {isAfter, isBefore, addSeconds, addDays} from "date-fns";
 
 const maxNameLength = 500;
 const testUsername = /^[a-zA-Z0-9-_.]*$/i;
@@ -61,7 +61,7 @@ export class User {
             throw new fail.Unauthorized("Only admins can view other user records");
         }
 
-        const res = sql.user.get({ username });
+        const res = sql.user.get({username});
 
         if (res.length === 0) {
             throw new fail.NotFound();
@@ -236,7 +236,7 @@ export class User {
 
     public insert(createdBy: string): void {
         this.validate();
-        const res = sql.user.get({ username: this.username });
+        const res = sql.user.get({username: this.username});
         if (res.length !== 0) {
             throw new fail.Failure(`A User with the username ${this.username} already exists`);
         }

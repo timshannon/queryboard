@@ -1,12 +1,12 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 process.env.DATADIR = ":memory:";
 process.env.STARTUPPASSWORD = "AdminPassword!1";
 
 import * as fail from "../src/fail";
 import * as middleware from "../src/middleware";
 import log from "../src/log";
-import { Password } from "../src/models/password";
-import { User } from "../src/models/user";
+import {Password} from "../src/models/password";
+import {User} from "../src/models/user";
 
 import express from "express";
 import request from "supertest";

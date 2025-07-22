@@ -1,6 +1,6 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
-import { Session } from "./models/session";
+import {Session} from "./models/session";
 import * as fail from "./fail";
 import log from "./log";
 
@@ -26,9 +26,6 @@ declare global {
 
 // TODO: Session handling middleware
 export function session() {
-    // usually only the security service will be using it's own getSession func to get the session directly
-    // from the database. Everyone else will use the default get session which will make a call to the security
-    // service's REST API
     return (req: express.Request, _: express.Response, next: express.NextFunction): void => {
         try {
             let token = "";
@@ -51,26 +48,26 @@ export function session() {
     };
 }
 
-export function errors(err: Error, req: express.Request, res: express.Response, _: express.NextFunction): void {
+export function errors(err: Error, _req: express.Request, res: express.Response, _: express.NextFunction): void {
     if (err instanceof fail.Failure) {
         log.warning(err);
-        res.status(err.status).send({ message: err.message });
+        res.status(err.status).send({message: err.message});
         return;
     }
     if (err instanceof SyntaxError) {
         log.warning(err);
-        res.status(400).send({ message: err.message });
+        res.status(400).send({message: err.message});
         return;
     }
 
     log.error(err);
 
     if (process.env.NODE_ENV !== "production") {
-        res.status(500).send({ message: err.message, stack: err.stack });
+        res.status(500).send({message: err.message, stack: err.stack});
         return;
     }
 
-    res.status(500).send({ message: "An internal server error has occurred" });
+    res.status(500).send({message: "An internal server error has occurred"});
     return;
 }
 

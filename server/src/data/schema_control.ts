@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import log from "../log";
 import * as data from "./data";
@@ -41,7 +41,7 @@ export function ensureSchema(cnn: data.Connection, schema: Schema): void {
 }
 
 function ensureSchemaTable(cnn: data.Connection): void {
-    const result = cnn.query<{ name: string }>(sql.tableExists);
+    const result = cnn.query<{name: string}>(sql.tableExists);
 
     if (result.length !== 0) {
         // table already exists
@@ -55,7 +55,7 @@ function ensureSchemaTable(cnn: data.Connection): void {
 
 function ensureSchemaVer(schema: Schema, cnn: data.Connection): void {
     const currentVer = schema.length - 1;
-    const res = cnn.query<{ version: number, locked: boolean }>(sql.getLastSchema);
+    const res = cnn.query<{version: number, locked: boolean}>(sql.getLastSchema);
     let dbVer = -1;
 
     if (res.length > 0) {
@@ -68,7 +68,7 @@ function ensureSchemaVer(schema: Schema, cnn: data.Connection): void {
     }
 
     if (dbVer < currentVer) {
-        cnn.query(sql.lockSchema, { version: dbVer });
+        cnn.query(sql.lockSchema, {version: dbVer});
         dbVer++;
 
         log.info(`Updating schema  in ${cnn.filepath} to version ${dbVer}`);

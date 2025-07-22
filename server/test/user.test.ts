@@ -1,4 +1,4 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 process.env.DATADIR = ":memory:";
 process.env.STARTUPPASSWORD = "AdminPassword!1";
 
@@ -66,7 +66,7 @@ async function setSetting(id: string, value: unknown): Promise<void> {
     const res = await request(app).put("/v1/settings")
         .set("Authorization", `Bearer ${admin.token}`)
         .set("X-CSRFToken", admin.csrf)
-        .send({ id, value });
+        .send({id, value});
     expect(res.status).toBe(200);
 }
 
@@ -343,7 +343,7 @@ describe("POST /v1/users/", () => {
 
 
         describe("PUT /v1/users/:username", () => {
-            const tester = { username: "test.updates", password: "Correcth0rsebattery$taple" };
+            const tester = {username: "test.updates", password: "Correcth0rsebattery$taple"};
             beforeAll(async () => {
                 await request(app).post("/v1/users/")
                     .set("Authorization", `Bearer ${admin.token}`)
@@ -356,7 +356,7 @@ describe("POST /v1/users/", () => {
 
             it("should require a session", async () => {
                 const res = await request(app).put(`/v1/users/${tester.username}`)
-                    .send({ version: 1 });
+                    .send({version: 1});
                 expect(res.status).toBe(401);
             });
 

@@ -1,12 +1,12 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import * as fail from "./fail";
 
-import { v4 as uuid } from "uuid";
+import {v4 as uuid} from "uuid";
 
 const matchUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export type ID = string & { __preventDuckTyping: never }; // ensures strict UUID type is used in functions
+export type ID = string & {__preventDuckTyping: never}; // ensures strict UUID type is used in functions
 
 export function generate(): ID {
     return uuid() as ID;

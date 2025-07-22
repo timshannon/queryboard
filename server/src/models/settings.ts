@@ -1,8 +1,8 @@
-// Copyright 2021 Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+// Copyright 2021-present Tim Shannon. All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
 
 import * as fail from "../fail";
-import { User } from "./user";
-import { sysdb } from "../data/data";
+import {User} from "./user";
+import {sysdb} from "../data/data";
 
 export interface ISetting<T> {
     get(): T;
@@ -49,13 +49,13 @@ export default {
     },
 };
 
-function setValue(user: User, id: string, value: { toString(): string }): void {
+function setValue(user: User, id: string, value: {toString(): string}): void {
     if (!user.admin) {
         throw new fail.Unauthorized("Only admins can update settings");
     }
 
     sysdb.beginTran((): void => {
-        sql.delete({ setting_id: id });
+        sql.delete({setting_id: id});
         sql.insert({
             setting_id: id,
             value: value.toString(),
@@ -66,7 +66,7 @@ function setValue(user: User, id: string, value: { toString(): string }): void {
 }
 
 function getValue(id: string): string | null {
-    const res = sql.get({ setting_id: id });
+    const res = sql.get({setting_id: id});
 
     if (res.length === 0) {
         return null;
