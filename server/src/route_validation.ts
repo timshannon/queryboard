@@ -77,6 +77,7 @@ class Route {
         if (this.requireSession && !req.session) {
             throw new fail.Unauthorized();
         }
+
         const promises = [];
         for (const field of this.fields) {
             promises.push(field.validate(req));
@@ -120,8 +121,9 @@ class Field {
                 } else if (this.type === fieldType.query) {
                     value = req.query;
                 } else if (this.type === fieldType.body) {
-                    value = req.body;
+                    value = req.body || {};
                 }
+
 
                 for (const fn of this.validations) {
                     const update = fn(value[this.name], this.name);

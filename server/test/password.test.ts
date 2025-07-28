@@ -78,7 +78,7 @@ describe("PUT /v1/users/:id/password", () => {
         expect(res.status).toBe(401);
     });
 
-    it.only("should require the fields newPassword and oldPassword", async () => {
+    it("should require the fields newPassword and oldPassword", async () => {
         let res = await request(app).put(`/v1/users/${tester.username}/password`)
             .set("Authorization", `Bearer ${tester.token}`)
             .set("X-CSRFToken", tester.csrf);

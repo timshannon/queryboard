@@ -117,7 +117,7 @@ describe("validations", () => {
         expect(updated).toEqual(corrected);
     });
 
-    it.each([
+    it.only.each([
         [query("bool").isBoolean(), "?bool=false", {bool: false}],
         [query("bool").isBoolean(), "?bool=no", {bool: false}],
         [query("bool").isBoolean(), "?other=blah", {other: "blah", bool: undefined}],

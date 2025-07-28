@@ -10,7 +10,6 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
-import {json} from "body-parser";
 
 // Create Express server
 const app = express();
@@ -19,7 +18,6 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
-app.use(json());
 app.use(express.json());
 app.use(middleware.session());
 app.use(middleware.csrf);

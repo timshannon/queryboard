@@ -9,7 +9,7 @@ import * as fail from "../../fail";
 export function passwordLogin(req: express.Request, res: express.Response): void {
     const rememberMe = req.body.rememberMe || false;
 
-    // FIXME: Will IP every be blank / undefined, handle proxies?
+    // FIXME: Will IP every be blank? / undefined, handle proxies?
     const session = Password.login(req.body.username, req.body.password, rememberMe, req.ip || "", req.get("User-Agent"));
     res.status(201).send(session);
 }
@@ -27,7 +27,7 @@ export function logout(req: express.Request, res: express.Response): void {
         throw new fail.Unauthorized();
     }
 
-    let sessionID = req.body.id;
+    let sessionID = req.body?.id;
     if (!sessionID) {
         sessionID = req.session.id;
     }
