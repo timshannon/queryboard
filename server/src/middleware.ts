@@ -14,6 +14,7 @@ interface IUpload {
     data: Buffer;
 }
 
+// queryboard specific request data
 declare global {
     /* eslint @typescript-eslint/no-namespace: "off" */
     namespace Express {

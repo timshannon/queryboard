@@ -323,9 +323,11 @@ class UploadFile {
 
         req.pipe(busboy);
         return new Promise((resolve, reject) => {
-            busboy.on("file", (_: any, stream: any, filename: string, encoding: string, contentType: string) => {
-                if (this.contentTypes.length > 0 && this.contentTypes.indexOf(contentType) === -1) {
-                    reject(new fail.Failure(`Content-Type is not one of the following: ${this.contentTypes}`));
+            busboy.on("file", (_: any, stream: any, info) => {
+                const {filename, encoding, mimeType} = info;
+
+                if (this.contentTypes.length > 0 && this.contentTypes.indexOf(mimeType) === -1) {
+                    reject(new fail.Failure(`Content-Type must be one of the following: ${this.contentTypes}`));
                 }
 
                 if (this.regFileName && !this.regFileName.test(filename)) {
@@ -356,7 +358,7 @@ class UploadFile {
                     req.files.push({
                         filename,
                         data: Buffer.concat(chunks),
-                        contentType,
+                        contentType: mimeType,
                         encoding,
                     });
 

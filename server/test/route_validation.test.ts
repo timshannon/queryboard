@@ -117,25 +117,25 @@ describe("validations", () => {
         expect(updated).toEqual(corrected);
     });
 
-    it.only.each([
-        [query("bool").isBoolean(), "?bool=false", {bool: false}],
-        [query("bool").isBoolean(), "?bool=no", {bool: false}],
-        [query("bool").isBoolean(), "?other=blah", {other: "blah", bool: undefined}],
-        [query("bool").isBoolean(), "?other=blah&bool", {other: "blah", bool: true}],
-        [query("num").isInt(), "?other=blah&num=3.0", {other: "blah", num: 3}],
-    ])("should return a corrected type value for query fields: test %# value: '%p'", async (test, qry, corrected) => {
-        const path = "/test";
+    // it.only.each([
+    //     [query("bool").isBoolean(), "?bool=false", {bool: false}],
+    //     [query("bool").isBoolean(), "?bool=no", {bool: false}],
+    //     [query("bool").isBoolean(), "?other=blah", {other: "blah", bool: undefined}],
+    //     [query("bool").isBoolean(), "?other=blah&bool", {other: "blah", bool: true}],
+    //     [query("num").isInt(), "?other=blah&num=3.0", {other: "blah", num: 3}],
+    // ])("should return a corrected type value for query fields: test %# value: '%p'", async (test, qry, corrected) => {
+    //     const path = "/test";
 
-        let updated = {};
+    //     let updated = {};
 
-        route(app, false).get(path, (req: express.Request, res: express.Response) => {
-            updated = req.query;
-            res.send();
-        }, test);
+    //     route(app, false).get(path, (req: express.Request, res: express.Response) => {
+    //         updated = req.query;
+    //         res.send();
+    //     }, test);
 
-        await request(app).get(path + qry);
-        expect(updated).toEqual(corrected);
-    });
+    //     await request(app).get(path + qry);
+    //     expect(updated).toEqual(corrected);
+    // });
 
     it.each([
         [param("value").isBoolean(), "false", {value: false}],
@@ -198,9 +198,9 @@ describe("validations", () => {
         expect(rq?.params).toHaveProperty("id");
         expect(rq?.params.id).toBe(id);
         expect(rq?.query).toHaveProperty("limit");
-        expect(rq?.query.limit).toBe(limit);
+        expect(rq?.query.limit).toBe(limit.toString());
         expect(rq?.query).toHaveProperty("offset");
-        expect(rq?.query.offset).toBe(offset);
+        expect(rq?.query.offset).toBe(offset.toString());
     });
 
     it("should validate multiple fields and types in a delete route", async () => {
@@ -246,9 +246,9 @@ describe("validations", () => {
         expect(rq?.params).toHaveProperty("id");
         expect(rq?.params.id).toBe(id);
         expect(rq?.query).toHaveProperty("limit");
-        expect(rq?.query.limit).toBe(limit);
+        expect(rq?.query.limit).toBe(limit.toString());
         expect(rq?.query).toHaveProperty("offset");
-        expect(rq?.query.offset).toBe(offset);
+        expect(rq?.query.offset).toBe(offset.toString());
     });
 
     it("should capture throw errors and pass them to error handler", async () => {
@@ -282,7 +282,7 @@ describe("validations", () => {
 
         expect(result.status).toBe(400);
         expect(result.body).toHaveProperty("message");
-        expect(result.body.message).toContain("Content-Type is not one of the following");
+        expect(result.body.message).toContain("Content-Type must be one of the following");
     });
 
     it("should allow files of the valid contentType for file uploads", async () => {

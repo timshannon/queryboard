@@ -28,7 +28,9 @@ routes(app);
 // set error handler last
 app.use(middleware.errors);
 
-// set config
+// set application defaults
+
+// set config / host configurable settings
 app.set("port", config.port);
 
 User.ensureAdmin();
