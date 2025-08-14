@@ -1,84 +1,97 @@
 <template>
-  <div>
-    <div v-if="loggedIn" id="appContainer" cds-layout="vertical">
-      <Toolbar />
-      <cds-divider />
-      <ResizePanel
-        orientation="horizontal"
-        cds-layout="horizontal align:stretch"
-      >
-        <template v-slot:1>
-          <nav cds-layout="align:shrink p:sm">
-            <Sidebar />
-          </nav>
-        </template>
-        <template v-slot:2>
-          <ResizePanel orientation="vertical">
-            <template v-slot:1>
-              <Tabs>
-                <Tab :selected="true" name="New Query">
-                  <Editor />
-                </Tab>
-                <Tab name="New Query 2">
-                  <Editor />
-                </Tab>
-                <Tab name="New Query 3">
-                  <Editor />
-                </Tab>
-              </Tabs>
-            </template>
-            <template v-slot:2>
-              <footer cds-layout="align:shrink p:md">footer</footer>
-            </template>
-          </ResizePanel>
-        </template>
-      </ResizePanel>
+  <div class="main-container">
+    <div class="alert alert-app-level alert-info">
+      <div class="alert-items">
+        <div class="alert-item static">
+          <div class="alert-icon-wrapper">
+            <cds-icon class="alert-icon" shape="info-circle"></cds-icon>
+          </div>
+          <div class="alert-text">App Level Alert</div>
+          <div class="alert-actions">
+            <button class="btn btn-sm alert-action">Action</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="close" aria-label="Close">
+        <cds-icon shape="times"></cds-icon>
+      </button>
     </div>
-    <Login v-else @login="checkSession" />
+    <header class="header header-6">
+      <div class="branding">
+        <a href="javascript://">
+          <cds-icon shape="vm-bug"></cds-icon>
+          <span class="title">Clarity Design</span>
+        </a>
+      </div>
+      <div class="header-nav">
+        <a
+          href="javascript://"
+          class="nav-link nav-icon"
+          aria-label="cloud service"
+        >
+          <cds-icon shape="cloud"></cds-icon>
+        </a>
+        <a
+          href="javascript://"
+          class="active nav-link nav-icon"
+          aria-label="storage service"
+        >
+          <cds-icon shape="folder"></cds-icon>
+        </a>
+      </div>
+    </header>
+    <nav class="subnav">
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link active" href="javascript://">Subnav Link 1</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript://">Subnav Link 2</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript://">Subnav Link 3</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript://">Subnav Link 4</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript://">Subnav Link 5</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="content-container">
+      <div class="content-area" cds-layout="m-t:md">
+        <!-- <p cds-text="body">Content Area</p> -->
+        <p cds-text="body" cds-layout="m-t:md">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eu
+          odio nisi. Vestibulum dignissim eget massa sit amet feugiat. Quisque
+          auctor mattis quam eu suscipit. Morbi ipsum risus, feugiat vitae sem
+          at, tincidunt elementum magna. Phasellus tristique posuere dui, ut
+          tempus felis sagittis quis. Integer iaculis ultrices elit, sed
+          venenatis eros. Vivamus interdum semper velit eget gravida. Sed
+          finibus eget lacus sed semper. Suspendisse fringilla, tellus in
+          molestie cursus, sapien purus volutpat lacus, eget venenatis erat est
+          vitae libero. Aliquam et orci hendrerit, consequat purus non,
+          imperdiet ipsum.
+        </p>
+      </div>
+      <div class="clr-vertical-nav">
+        <a clrVerticalNavLink>Link 1</a>
+        <a clrVerticalNavLink>Link 2</a>
+        <a clrVerticalNavLink class="active">Link 3</a>
+        <a clrVerticalNavLink>Link 4</a>
+        <a clrVerticalNavLink>Link 5</a>
+        <a clrVerticalNavLink>Link 6</a>
+      </div>
+    </div>
   </div>
 </template>
-<style lang="scss">
-#appContainer {
-  height: 100vh;
-}
-</style>
-<script lang="ts">
-// Copyright 2021 Tim Shannon. 
-// All rights reserved. Use of this source code is governed by the MIT license that can be found in the LICENSE file.
-import "@cds/core/divider/register.js";
-import { ref } from "vue";
+<script setup lang="ts">
+import '@cds/core/icon/register.js';
+import {ClarityIcons, userIcon, infoCircleIcon, timesIcon, vmBugIcon, folderIcon, cloudIcon} from '@cds/core/icon';
 
-import Login from "./views/Login.vue";
-import Sidebar from "./views/Sidebar.vue";
-import Toolbar from "./views/Toolbar.vue";
-import Editor from "./components/Editor.vue";
-import ResizePanel from "./components/ResizePanel.vue";
-import Tab from "./components/Tab.vue";
-import Tabs from "./components/Tabs.vue";
-
-import { hasSession } from "./http";
-
-export default {
-  components: {
-    Login,
-    Toolbar,
-    Sidebar,
-    Editor,
-    ResizePanel,
-    Tab,
-    Tabs,
-  },
-  setup() {
-    const loggedIn = ref(hasSession());
-
-    function checkSession() {
-      loggedIn.value = hasSession();
-    }
-
-    return {
-      loggedIn,
-      checkSession,
-    };
-  }
-};
+ClarityIcons.addIcons(userIcon, infoCircleIcon, timesIcon, vmBugIcon, folderIcon, cloudIcon);
 </script>
+
+<style scoped></style>
+
